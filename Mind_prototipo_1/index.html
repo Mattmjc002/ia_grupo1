@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind — Plataforma Corporativa</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e6e9ef;--primary:#3157d5;--primary2:#243fa8;--soft:#eef2ff;--danger:#c0392b}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#eef2ff,#f8fafc)}
+.login-card{width:min(430px,100%);background:white;border:1px solid var(--line);border-radius:20px;padding:32px;box-shadow:0 20px 60px #182b6315}
+.logo{font-size:30px;font-weight:800;letter-spacing:-1px}.logo span{color:var(--primary)}
+.login-card h1{margin:28px 0 8px;font-size:25px}.login-card p{color:var(--muted);line-height:1.5}
+label{display:block;font-size:13px;font-weight:700;margin:18px 0 7px}select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--primary)}
+.btn{border:0;border-radius:10px;padding:12px 16px;cursor:pointer;font-weight:700}.primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary2)}
+.app{min-height:100vh}.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:5}
+.user-mini{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800;color:var(--primary)}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 70px)}.sidebar{background:#fff;border-right:1px solid var(--line);padding:20px 14px}.nav{display:grid;gap:6px}.nav button{background:none;border:0;text-align:left;padding:12px;border-radius:10px;cursor:pointer;color:#475467}.nav button.active,.nav button:hover{background:var(--soft);color:var(--primary);font-weight:700}
+main{padding:28px;max-width:1200px;width:100%;margin:auto}.page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.page-title h2{margin:0}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}.stat{font-size:28px;font-weight:800;margin-top:7px}.feed{display:grid;gap:14px;margin-top:16px}.post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}.post-head{display:flex;gap:10px;align-items:center}.post h3{margin:12px 0 7px;font-size:17px}.post p{line-height:1.55;color:#475467}.tag{display:inline-block;background:var(--soft);color:var(--primary);font-size:12px;font-weight:700;border-radius:999px;padding:5px 8px;margin-right:5px}.actions{display:flex;gap:8px;margin-top:14px}.ghost{background:#f8fafc;border:1px solid var(--line);color:#475467}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--line);font-size:14px}th{background:#f8fafc}.role{font-weight:700}
+.notice{padding:12px 14px;background:var(--soft);border-radius:10px;color:#334155;font-size:13px;margin-bottom:18px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{display:none}.grid{grid-template-columns:1fr}.topbar{padding:0 16px}main{padding:18px}}
+</style>
+</head>
+<body>
+
+<section id="login" class="login">
+  <div class="login-card">
+    <div class="logo">M<span>i</span>nd</div>
+    <h1>Entrar na plataforma</h1>
+    <p>Protótipo funcional da plataforma corporativa. Escolha um usuário para simular os diferentes níveis de acesso.</p>
+    <label>Usuário</label>
+    <select id="loginUser"></select>
+    <button class="btn primary" style="width:100%;margin-top:20px" onclick="login()">Entrar</button>
+  </div>
+</section>
+
+<section id="app" class="app hidden">
+  <header class="topbar">
+    <div class="logo">M<span>i</span>nd</div>
+    <div class="user-mini"><div class="avatar" id="topAvatar"></div><div><strong id="topName"></strong><div class="muted" id="topRole"></div></div></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="nav">
+        <button class="active" onclick="showPage('inicio',this)">Início</button>
+        <button onclick="showPage('feed',this)">Feed</button>
+        <button onclick="showPage('pessoas',this)">Pessoas</button>
+        <button onclick="showPage('conhecimento',this)">Conhecimento</button>
+        <button id="adminNav" onclick="showPage('estrutura',this)">Estrutura</button>
+        <button onclick="logout()">Sair</button>
+      </div>
+    </aside>
+    <main>
+      <div id="content"></div>
+    </main>
+  </div>
+</section>
+
+<script>
+const users=[
+ {id:1,nome:"Ana Souza",area:"Institucional",cargo:"Líder",nivel:3},
+ {id:2,nome:"Carlos Mendes",area:"Financeiro",cargo:"Líder",nivel:3},
+ {id:3,nome:"Mariana Costa",area:"Comercial",cargo:"Gestor",nivel:2},
+ {id:4,nome:"Rafael Lima",area:"Comercial",cargo:"Consultor",nivel:1},
+ {id:5,nome:"Lucas Alves",area:"Projetos",cargo:"Gerente",nivel:2},
+ {id:6,nome:"Julia Martins",area:"Projetos",cargo:"Consultor",nivel:1},
+ {id:7,nome:"Pedro Rocha",area:"Operacional",cargo:"Líder",nivel:3},
+ {id:8,nome:"Beatriz Silva",area:"Recursos Humanos",cargo:"Gestor",nivel:2},
+];
+
+const posts=[
+ {user:4,title:"Melhoria no processo comercial",text:"Identifiquei uma etapa repetitiva no cadastro de clientes e documentei uma forma de reduzir o retrabalho.",tags:["Comercial","Processos"]},
+ {user:6,title:"Lição aprendida no projeto Orion",text:"Durante o projeto, testamos uma nova organização das tarefas e conseguimos centralizar melhor as informações da equipe.",tags:["Projetos","Gestão"]},
+ {user:3,title:"Novo procedimento para a equipe",text:"Registrei o procedimento atualizado para que os consultores possam consultar o mesmo padrão de atendimento.",tags:["Comercial","Conhecimento"]},
+ {user:7,title:"Otimização operacional",text:"Mapeamos uma atividade operacional e encontramos pontos que podem ser automatizados futuramente.",tags:["Operacional","Automação"]},
+];
+
+let current=null;
+
+function fillUsers(){
+ const s=document.getElementById('loginUser');
+ users.forEach(u=>{const o=document.createElement('option');o.value=u.id;o.textContent=`${u.nome} — ${u.cargo} ${u.area}`;s.appendChild(o)});
+}
+function login(){
+ current=users.find(u=>u.id==document.getElementById('loginUser').value);
+ document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
+ document.getElementById('topAvatar').textContent=current.nome.split(' ').map(x=>x[0]).slice(0,2).join('');
+ document.getElementById('topName').textContent=current.nome;
+ document.getElementById('topRole').textContent=`${current.cargo} • ${current.area}`;
+ document.getElementById('adminNav').style.display=current.nivel>=2?'block':'none';
+ showPage('inicio',document.querySelector('.nav button'));
+}
+function logout(){current=null;document.getElementById('app').classList.add('hidden');document.getElementById('login').classList.remove('hidden')}
+function allowedPost(p){
+ const u=users.find(x=>x.id===p.user);
+ if(u.area===current.area) return true;
+ return current.nivel>=3;
+}
+function visiblePosts(){return posts.filter(allowedPost)}
+function showPage(page,btn){
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');
+ const c=document.getElementById('content');
+ if(page==='inicio') c.innerHTML=home();
+ if(page==='feed') c.innerHTML=feed();
+ if(page==='pessoas') c.innerHTML=people();
+ if(page==='conhecimento') c.innerHTML=knowledge();
+ if(page==='estrutura') c.innerHTML=structure();
+}
+function home(){
+ const vp=visiblePosts();
+ return `<div class="page-title"><div><h2>Olá, ${current.nome.split(' ')[0]} 👋</h2><div class="muted">Visão geral da sua área e dos conhecimentos disponíveis.</div></div><button class="btn primary" onclick="newPost()">+ Compartilhar conhecimento</button></div>
+ <div class="notice">Você está acessando como <strong>${current.cargo}</strong> da área <strong>${current.area}</strong>. O conteúdo exibido respeita sua hierarquia de acesso.</div>
+ <div class="grid">
+  <div class="card"><div class="muted">Publicações visíveis</div><div class="stat">${vp.length}</div></div>
+  <div class="card"><div class="muted">Pessoas da sua área</div><div class="stat">${users.filter(u=>u.area===current.area).length}</div></div>
+  <div class="card"><div class="muted">Nível de acesso</div><div class="stat">${current.cargo}</div></div>
+ </div>
+ <div class="feed">${vp.slice(0,3).map(postCard).join('')}</div>`;
+}
+function feed(){
+ return `<div class="page-title"><div><h2>Feed</h2><div class="muted">Conhecimentos compartilhados dentro da organização.</div></div><button class="btn primary" onclick="newPost()">+ Publicar</button></div><div class="feed">${visiblePosts().map(postCard).join('')}</div>`;
+}
+function postCard(p){
+ const u=users.find(x=>x.id===p.user);
+ return `<article class="post"><div class="post-head"><div class="avatar">${u.nome.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div><strong>${u.nome}</strong><div class="muted">${u.cargo} • ${u.area}</div></div></div><h3>${p.title}</h3><p>${p.text}</p>${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}<div class="actions"><button class="btn ghost" onclick="alert('Conhecimento salvo.')">Salvar</button><button class="btn ghost" onclick="alert('Reconhecimento enviado para '+u.nome+'.')">Reconhecer</button></div></article>`;
+}
+function people(){
+ const arr=users.filter(u=>current.nivel>=3 || u.area===current.area);
+ return `<div class="page-title"><div><h2>Pessoas</h2><div class="muted">Usuários que você pode visualizar pela sua hierarquia.</div></div></div>
+ <table><thead><tr><th>Nome</th><th>Área</th><th>Cargo</th><th>Nível</th></tr></thead><tbody>${arr.map(u=>`<tr><td><strong>${u.nome}</strong></td><td>${u.area}</td><td class="role">${u.cargo}</td><td>${u.nivel===3?'Líder':u.nivel===2?'Gestor':'Consultor'}</td></tr>`).join('')}</tbody></table>`;
+}
+function knowledge(){
+ return `<div class="page-title"><div><h2>Base de conhecimento</h2><div class="muted">Área destinada à organização do conhecimento corporativo.</div></div></div>
+ <div class="grid">
+ ${["Processos","Projetos","Comercial","Operações","Gestão","Automação"].map((x,i)=>`<div class="card"><strong>${x}</strong><div class="muted" style="margin-top:8px">${3+i} conhecimentos registrados</div></div>`).join('')}
+ </div>`;
+}
+function structure(){
+ if(current.nivel<2)return '';
+ const byArea={};users.forEach(u=>(byArea[u.area]??=[]).push(u));
+ return `<div class="page-title"><div><h2>Estrutura organizacional</h2><div class="muted">Visualização condicionada ao nível de acesso.</div></div></div>
+ <div class="grid">${Object.entries(byArea).map(([area,arr])=>`<div class="card"><strong>${area}</strong>${arr.map(u=>`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><strong>${u.nome}</strong><div class="muted">${u.cargo}</div></div>`).join('')}</div>`).join('')}</div>`;
+}
+function newPost(){
+ const title=prompt("Título do conhecimento:");
+ if(!title)return;
+ const text=prompt("Descreva o conhecimento:");
+ if(!text)return;
+ posts.unshift({user:current.id,title,text,tags:[current.area,"Conhecimento"]});
+ showPage('feed',document.querySelectorAll('.nav button')[1]);
+}
+fillUsers();
+</script>
+</body>
+</html>

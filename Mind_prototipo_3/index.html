@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind — Plataforma Corporativa</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e6e9ef;--primary:#3157d5;--primary2:#243fa8;--soft:#eef2ff;--danger:#c0392b;--success:#27ae60}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}
+
+/* Auth Screens */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#eef2ff,#f8fafc)}
+.login-card{width:min(480px,100%);background:white;border:1px solid var(--line);border-radius:20px;padding:32px;box-shadow:0 20px 60px #182b6315}
+.logo{font-size:30px;font-weight:800;letter-spacing:-1px}.logo span{color:var(--primary)}
+.auth-tabs{display:flex;gap:10px;margin:20px 0;border-bottom:1px solid var(--line)}
+.auth-tabs button{padding:10px 16px;border:none;background:none;cursor:pointer;font-weight:700;color:var(--muted);border-bottom:2px solid transparent}
+.auth-tabs button.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;outline:none}
+select:focus,input:focus,textarea:focus{border-color:var(--primary)}
+.btn{border:0;border-radius:10px;padding:12px 16px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary2)}
+.ghost{background:#f8fafc;border:1px solid var(--line);color:#475467}
+.danger{background:var(--danger);color:#fff}
+
+/* App Layout */
+.app{min-height:100vh}.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+.user-mini{display:flex;align-items:center;gap:12px;cursor:pointer}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800;color:var(--primary);flex-shrink:0}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 70px)}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:20px 14px;max-height:calc(100vh - 70px);overflow-y:auto}
+.nav-group{margin-bottom:16px}
+.nav-title{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;padding:8px 12px 4px}
+.nav button{width:100%;background:none;border:0;text-align:left;padding:9px 12px;border-radius:8px;cursor:pointer;color:#475467;font-size:13px;display:block}
+.nav button.sub{padding-left:22px;font-size:12px}
+.nav button.active,.nav button:hover{background:var(--soft);color:var(--primary);font-weight:700}
+
+main{padding:28px;max-width:1300px;width:100%;margin:auto}
+.page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.page-title h2{margin:0}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.stat{font-size:28px;font-weight:800;margin-top:7px}
+
+/* Feeds & Posts */
+.feed{display:grid;gap:16px;margin-top:16px}
+.post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.02)}
+.post-head{display:flex;gap:12px;align-items:center;cursor:pointer}
+.post h3{margin:12px 0 8px;font-size:18px}.post p{line-height:1.6;color:#475467}
+.tag{display:inline-block;background:var(--soft);color:var(--primary);font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;margin-right:6px;margin-top:6px}
+.actions{display:flex;gap:8px;margin-top:16px}
+.notice{padding:14px 16px;background:var(--soft);border-radius:10px;color:#334155;font-size:13px;margin-bottom:20px;border-left:4px solid var(--primary)}
+
+/* Profile Page */
+.profile-header{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;gap:24px;align-items:flex-start;margin-bottom:24px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:28px;font-weight:800;color:var(--primary)}
+.skills-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.skill-badge{background:#eef2ff;color:var(--primary);padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700}
+
+/* Chart Canvas Pan/Zoom Structure */
+.org-viewport{width:100%;height:680px;border:1px solid var(--line);background:#fafbfc;border-radius:16px;overflow:hidden;position:relative;cursor:grab}
+.org-viewport:active{cursor:grabbing}
+.org-controls{position:absolute;bottom:20px;right:20px;display:flex;gap:8px;z-index:5;background:#fff;padding:6px;border-radius:10px;border:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.org-canvas{transform-origin:0 0;position:absolute;padding:60px;min-width:2400px;display:flex;flex-direction:column;align-items:center;gap:40px}
+.org-tree{display:flex;gap:30px;justify-content:center;position:relative}
+.org-node{background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px 18px;width:210px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.04);cursor:pointer;transition:transform 0.15s, border-color 0.15s;position:relative}
+.org-node:hover{transform:translateY(-4px);border-color:var(--primary)}
+.org-node .node-role{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--primary);margin-top:4px}
+.org-node .node-name{font-weight:700;font-size:14px;margin-top:2px}
+.org-node .node-area{font-size:12px;color:var(--muted)}
+
+/* Modals */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(23,32,51,0.6);display:grid;place-items:center;z-index:100;backdrop-filter:blur(3px)}
+.modal-card{width:min(560px,92%);background:#fff;border-radius:20px;padding:28px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.modal-header h3{margin:0;font-size:20px}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)}
+
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--line);font-size:14px}th{background:#f8fafc}
+</style>
+</head>
+<body>
+
+<!-- Login & Register Screen -->
+<section id="loginScreen" class="login">
+  <div class="login-card">
+    <div class="logo">M<span>i</span>nd</div>
+    <div class="auth-tabs">
+      <button id="tabLoginBtn" class="active" onclick="switchAuthTab('login')">Entrar</button>
+      <button id="tabRegisterBtn" onclick="switchAuthTab('register')">Cadastrar-se</button>
+    </div>
+
+    <!-- Form Entrar -->
+    <div id="loginForm">
+      <label>Selecione um usuário para simular</label>
+      <select id="loginUserSelect"></select>
+      <button class="btn primary" style="width:100%;margin-top:20px" onclick="login()">Entrar na Plataforma</button>
+    </div>
+
+    <!-- Form Cadastro -->
+    <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+      <label>Nome Completo</label>
+      <input type="text" id="regName" required placeholder="Seu nome">
+      
+      <label>E-mail Corporativo</label>
+      <input type="email" id="regEmail" required placeholder="seu.nome@orion.com">
+
+      <label>Senha</label>
+      <input type="password" id="regPass" required placeholder="******">
+
+      <label>Área / Departamento</label>
+      <select id="regArea" onchange="updateRoleOptions()" required>
+        <option value="Comercial">Comercial</option>
+        <option value="Projetos">Projetos</option>
+        <option value="Operacional">Operacional</option>
+        <option value="Recursos Humanos">Recursos Humanos</option>
+        <option value="Financeiro">Financeiro</option>
+        <option value="Institucional">Institucional</option>
+        <option value="Executiva">Executiva</option>
+      </select>
+
+      <label>Cargo Desejado</label>
+      <select id="regCargo" onchange="toggleSecurityPass()" required>
+        <option value="Consultor">Consultor (Nível 1)</option>
+        <option value="Gestor">Gestor / Gerente (Nível 2)</option>
+        <option value="Líder">Líder / Diretor (Nível 3)</option>
+      </select>
+
+      <label>Senha de Segurança do Cargo</label>
+      <input type="password" id="regSecurityPass" required placeholder="Senha informada pelo seu gestor">
+      <small style="color:var(--muted);font-size:11px">Senha padrão inicial: <strong>123456</strong></small>
+
+      <button type="submit" class="btn primary" style="width:100%;margin-top:20px">Concluir Cadastro</button>
+    </form>
+  </div>
+</section>
+
+<!-- App Principal -->
+<section id="appScreen" class="app hidden">
+  <header class="topbar">
+    <div class="logo">M<span>i</span>nd</div>
+    <div class="user-mini" onclick="openProfile(current.id)">
+      <div class="avatar" id="topAvatar"></div>
+      <div>
+        <strong id="topName"></strong>
+        <div class="muted" id="topRole"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="nav" id="sidebarNav"></div>
+    </aside>
+
+    <main>
+      <div id="content"></div>
+    </main>
+  </div>
+</section>
+
+<!-- Modal Nova Postagem -->
+<div id="postModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Novo Conhecimento</h3>
+      <button class="close-btn" onclick="closeModal('postModal')">&times;</button>
+    </div>
+    <form onsubmit="savePost(event)">
+      <label>Título do Conhecimento</label>
+      <input type="text" id="postTitle" placeholder="Ex: Otimização de processos..." required>
+      
+      <label>Feed de Destino</label>
+      <select id="postFeedTarget" required></select>
+
+      <label>Categoria de Conhecimento</label>
+      <select id="postCategory" required></select>
+      
+      <label>Descrição Detalhada</label>
+      <textarea id="postText" rows="4" placeholder="Compartilhe os detalhes, aprendizados ou procedimentos..." required></textarea>
+      
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn ghost" onclick="closeModal('postModal')">Cancelar</button>
+        <button type="submit" class="btn primary">Publicar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edição do Próprio Perfil -->
+<div id="editProfileModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Personalizar Meu Perfil</h3>
+      <button class="close-btn" onclick="closeModal('editProfileModal')">&times;</button>
+    </div>
+    <form onsubmit="saveProfile(event)">
+      <label>Sua Biografia / Apresentação</label>
+      <textarea id="editBio" rows="3" placeholder="Escreva um breve resumo da sua jornada..."></textarea>
+
+      <label>Suas Competências (Separadas por vírgula)</label>
+      <input type="text" id="editSkills" placeholder="Ex: Gestão de Projetos, Python, CRM, Liderança">
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn ghost" onclick="closeModal('editProfileModal')">Cancelar</button>
+        <button type="submit" class="btn primary">Salvar Perfil</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Senhas de Segurança por Nível (Padrão: 123456)
+let rolePasswords = {
+  1: "123456", // Consultor
+  2: "123456", // Gestor
+  3: "123456"  // Líder
+};
+
+// 20+ Funcionários Cadastrados
+const users = [
+  {id:1, nome:"Ana Souza", email:"ana.souza@orion.com", area:"Institucional", cargo:"Líder", nivel:3, bio:"Diretora de Governança e Estrutura.", skills:["Estratégia", "Governança", "Liderança"]},
+  {id:2, nome:"Carlos Mendes", email:"carlos.mendes@orion.com", area:"Financeiro", cargo:"Líder", nivel:3, bio:"CFO com foco em eficiência e orçamento.", skills:["Controladoria", "M&A", "Planejamento"]},
+  {id:3, nome:"Mariana Costa", email:"mariana.costa@orion.com", area:"Comercial", cargo:"Gestor", nivel:2, bio:"Gerente Comercial focada em novos negócios.", skills:["Vendas B2B", "CRM", "Negociação"]},
+  {id:4, nome:"Rafael Lima", email:"rafael.lima@orion.com", area:"Comercial", cargo:"Consultor", nivel:1, bio:"Consultor de Vendas Enterprise.", skills:["Prospecção", "Outbound", "Pitch"]},
+  {id:5, nome:"Lucas Alves", email:"lucas.alves@orion.com", area:"Projetos", cargo:"Gerente", nivel:2, bio:"Gerente de Projetos de Inovação.", skills:["Scrum", "PMBOK", "Agile"]},
+  {id:6, nome:"Julia Martins", email:"julia.martins@orion.com", area:"Projetos", cargo:"Consultor", nivel:1, bio:"Analista de Métodos e Entregas.", skills:["Kanban", "Documentação", "Jira"]},
+  {id:7, nome:"Pedro Rocha", email:"pedro.rocha@orion.com", area:"Operacional", cargo:"Líder", nivel:3, bio:"Diretor de Operações e Logística.", skills:["Supply Chain", "Lean", "SLA"]},
+  {id:8, nome:"Beatriz Silva", email:"beatriz.silva@orion.com", area:"Recursos Humanos", cargo:"Gestor", nivel:2, bio:"Gerente de Gente e Gestão.", skills:["Clima", "Gente & Gestão", "Retenção"]},
+  {id:9, nome:"Thiago Ferreira", email:"thiago.ferreira@orion.com", area:"Executiva", cargo:"Líder", nivel:3, bio:"CEO & Fundador do Grupo.", skills:["Visão Holística", "Inovação", "Scale-up"]},
+  {id:10, nome:"Camila Ramos", email:"camila.ramos@orion.com", area:"Executiva", cargo:"Gestor", nivel:2, bio:"Gerente de Relações Estratégicas.", skills:["Relações Institucionais", "Parcerias"]},
+  {id:11, nome:"Fernando Dias", email:"fernando.dias@orion.com", area:"Financeiro", cargo:"Gestor", nivel:2, bio:"Gerente de Planejamento Financeiro.", skills:["FP&A", "Auditoria", "Fluxo de Caixa"]},
+  {id:12, nome:"Patrícia Souza", email:"patricia.souza@orion.com", area:"Financeiro", cargo:"Consultor", nivel:1, bio:"Analista de Contas e Custos.", skills:["Excel", "Contabilidade", "Fiscal"]},
+  {id:13, nome:"Gabriel Castro", email:"gabriel.castro@orion.com", area:"Comercial", cargo:"Líder", nivel:3, bio:"Diretor Comercial de Expansão.", skills:["Expansão", "Key Accounts", "Liderança"]},
+  {id:14, nome:"Fernanda Prado", email:"fernanda.prado@orion.com", area:"Projetos", cargo:"Líder", nivel:3, bio:"Diretora de PMO Executivo.", skills:["PMO", "Transformação Digital"]},
+  {id:15, nome:"Marcos Oliveira", email:"marcos.oliveira@orion.com", area:"Operacional", cargo:"Gestor", nivel:2, bio:"Gerente de Processos Industriais.", skills:["BPMN", "Six Sigma", "KAIZEN"]},
+  {id:16, nome:"Sabrina Duarte", email:"sabrina.duarte@orion.com", area:"Operacional", cargo:"Consultor", nivel:1, bio:"Analista de Qualidade e Processos.", skills:["Controle de Qualidade", "Checklists"]},
+  {id:17, nome:"Luan Barbosa", email:"luan.barbosa@orion.com", area:"Recursos Humanos", cargo:"Líder", nivel:3, bio:"Diretor de Talentos e Cultura.", skills:["Cultura Organizacional", "Executive Search"]},
+  {id:18, nome:"Renata Vianna", email:"renata.vianna@orion.com", area:"Recursos Humanos", cargo:"Consultor", nivel:1, bio:"Business Partner de RH.", skills:["T&D", "Avaliação de Desempenho"]},
+  {id:19, nome:"Diego Ribeiro", email:"diego.ribeiro@orion.com", area:"Institucional", cargo:"Gestor", nivel:2, bio:"Gerente de Comunicação e Marca.", skills:["Branding", "Imprensa", "Comunicação Interna"]},
+  {id:20, nome:"Vanessa Lins", email:"vanessa.lins@orion.com", area:"Institucional", cargo:"Consultor", nivel:1, bio:"Analista de Responsabilidade Social.", skills:["ESG", "Comunidades", "Sustentabilidade"]}
+];
+
+// Categorias por Área Ampliadas
+const areaCategories = {
+  "Comercial": ["Processos de Vendas", "Pipeline de Clientes", "Negociação B2B", "Prospecção Outbound", "Estratégia de Pricing"],
+  "Projetos": ["Metodologias Ágeis", "Gestão de Escopo", "Qualidade das Entregas", "Automação de Tarefas", "Gestão de Riscos"],
+  "Operacional": ["Otimização de Processos", "Logística Interna", "Automação Industrial", "Padrões Operacionais (POP)", "KPIs de SLA"],
+  "Recursos Humanos": ["Onboarding & Treinamento", "Clima Organizacional", "Gestão de Benefícios", "Desenvolvimento Individual (PDI)", "Cultura & Valores"],
+  "Financeiro": ["Planejamento Orçamentário", "Fluxo de Caixa", "Compliance & Auditoria", "Controladoria", "Redução de Custos"],
+  "Institucional": ["Estratégia Corporativa", "Governança & ESG", "Comunicação Interna", "Relações Públicas"],
+  "Executiva": ["Visão Estratégica", "Inovação Corporativa", "Liderança Inspiradora", "Diretrizes de Crescimento"]
+};
+
+// Estrutura Completa de Feeds
+const feedsStructure = [
+  { id: 'geral', title: 'Geral', area: 'Geral', nivelRequired: 1 },
+  { id: 'geral-lider', title: 'Líder Geral', area: 'Geral', nivelRequired: 3 },
+  { id: 'geral-gestor', title: 'Gestor Geral', area: 'Geral', nivelRequired: 2 },
+  { id: 'geral-consultor', title: 'Consultor Geral', area: 'Geral', nivelRequired: 1 },
+
+  { id: 'executiva-geral', title: 'Executiva Geral', area: 'Executiva', nivelRequired: 1 },
+  { id: 'executiva-lider', title: 'Líder Executiva', area: 'Executiva', nivelRequired: 3 },
+  { id: 'executiva-gestor', title: 'Gestor Executiva', area: 'Executiva', nivelRequired: 2 },
+  { id: 'executiva-consultor', title: 'Consultor Executiva', area: 'Executiva', nivelRequired: 1 },
+
+  { id: 'financeiro-geral', title: 'Financeiro Geral', area: 'Financeiro', nivelRequired: 1 },
+  { id: 'financeiro-lider', title: 'Líder Financeiro', area: 'Financeiro', nivelRequired: 3 },
+  { id: 'financeiro-gestor', title: 'Gestor Financeiro', area: 'Financeiro', nivelRequired: 2 },
+  { id: 'financeiro-consultor', title: 'Consultor Financeiro', area: 'Financeiro', nivelRequired: 1 },
+
+  { id: 'comercial-geral', title: 'Comercial Geral', area: 'Comercial', nivelRequired: 1 },
+  { id: 'comercial-lider', title: 'Líder Comercial', area: 'Comercial', nivelRequired: 3 },
+  { id: 'comercial-gestor', title: 'Gestor Comercial', area: 'Comercial', nivelRequired: 2 },
+  { id: 'comercial-consultor', title: 'Consultor Comercial', area: 'Comercial', nivelRequired: 1 },
+
+  { id: 'projetos-geral', title: 'Projetos Geral', area: 'Projetos', nivelRequired: 1 },
+  { id: 'projetos-lider', title: 'Líder Projetos', area: 'Projetos', nivelRequired: 3 },
+  { id: 'projetos-gestor', title: 'Gestor Projetos', area: 'Projetos', nivelRequired: 2 },
+  { id: 'projetos-consultor', title: 'Consultor Projetos', area: 'Projetos', nivelRequired: 1 },
+
+  { id: 'operacional-geral', title: 'Operacional Geral', area: 'Operacional', nivelRequired: 1 },
+  { id: 'operacional-lider', title: 'Líder Operacional', area: 'Operacional', nivelRequired: 3 },
+  { id: 'operacional-gestor', title: 'Gestor Operacional', area: 'Operacional', nivelRequired: 2 },
+  { id: 'operacional-consultor', title: 'Consultor Operacional', area: 'Operacional', nivelRequired: 1 },
+
+  { id: 'rh-geral', title: 'Recursos Humanos Geral', area: 'Recursos Humanos', nivelRequired: 1 },
+  { id: 'rh-lider', title: 'Líder Recursos Humanos', area: 'Recursos Humanos', nivelRequired: 3 },
+  { id: 'rh-gestor', title: 'Gestor Recursos Humanos', area: 'Recursos Humanos', nivelRequired: 2 },
+  { id: 'rh-consultor', title: 'Consultor Recursos Humanos', area: 'Recursos Humanos', nivelRequired: 1 }
+];
+
+// Inúmeras Postagens Pré-carregadas
+const posts = [
+  {id:101, user:9, feedId: 'executiva-lider', title:"Diretrizes para o Próximo Trimestre", text:"Apresentamos o plano estratégico focado em inovação tecnológica e consolidação de cultura.", tags:["Executiva","Visão Estratégica"]},
+  {id:102, user:13, feedId: 'comercial-lider', title:"Meta de Expansão Nacional", text:"Estruturamos as regiões de foco para o setor Comercial. Revisem o relatório de mercado enviado.", tags:["Comercial","Estratégia de Pricing"]},
+  {id:103, user:4, feedId: 'comercial-consultor', title:"Script de Abordagem para Clientes Enterprise", text:"Criei um modelo de apresentação inicial que aumentou nossa taxa de resposta em 20%.", tags:["Comercial","Prospecção Outbound"]},
+  {id:104, user:3, feedId: 'comercial-gestor', title:"Revisão do Pipeline no CRM", text:"Favor atualizar os status dos leads até sexta-feira para nossa reunião semanal.", tags:["Comercial","Pipeline de Clientes"]},
+  {id:105, user:5, feedId: 'projetos-gestor', title:"Padronização das Sprints de Inovação", text:"Organizamos um novo template no Jira para agilizar a criação de histórias de usuário.", tags:["Projetos","Metodologias Ágeis"]},
+  {id:106, user:6, feedId: 'projetos-consultor', title:"Lição Aprendida: Projeto Orion", text:"Centralizar o repositório de documentação evitou retrabalho e chamados de dúvida da equipe.", tags:["Projetos","Qualidade das Entregas"]},
+  {id:107, user:14, feedId: 'projetos-lider', title:"Framework Corporativo de Projetos", text:"Publicamos as diretrizes oficiais para governança em projetos estratégicos.", tags:["Projetos","Gestão de Riscos"]},
+  {id:108, user:7, feedId: 'operacional-lider', title:"Automação da Cadeia de Suprimentos", text:"Concluímos o mapeamento do processo logístico e identificamos etapas prontas para automação.", tags:["Operacional","Automação Industrial"]},
+  {id:109, user:15, feedId: 'operacional-gestor', title:"Novo Manual de POP Operacional", text:"Atualizamos o Procedimento Operacional Padrão para os times de campo.", tags:["Operacional","Padrões Operacionais (POP)"]},
+  {id:110, user:16, feedId: 'operacional-consultor', title:"Melhoria na Triagem de Materiais", text:"Sugestão aprovada: nova rotulagem física otimizou o tempo de despacho em 15 minutos.", tags:["Operacional","Otimização de Processos"]},
+  {id:111, user:8, feedId: 'rh-gestor', title:"Pesquisa de Clima Organizacional 2026", text:"Os resultados preliminares indicam alta adesão. Obrigado a todos que participaram!", tags:["Recursos Humanos","Clima Organizacional"]},
+  {id:112, user:17, feedId: 'rh-lider', title:"Iniciativa de Liderança Inclusiva", text:"Lançamos o novo programa de desenvolvimento contínuo de líderes corporativos.", tags:["Recursos Humanos","Cultura & Valores"]},
+  {id:113, user:18, feedId: 'rh-consultor', title:"Guia Rápido de Onboarding para Novos Talentos", text:"Montei um checklist de boas-vindas para acelerar a integração dos recém-chegados.", tags:["Recursos Humanos","Onboarding & Treinamento"]},
+  {id:114, user:2, feedId: 'financeiro-lider', title:"Diretrizes do Orçamento Anual", text:"Reforçamos os limites de contingência orçamentária por departamento para este ano.", tags:["Financeiro","Planejamento Orçamentário"]},
+  {id:115, user:11, feedId: 'financeiro-gestor', title:"Relatório Mensal de Fluxo de Caixa", text:"O demonstrativo financeiro consolidado já está disponível na pasta de controle.", tags:["Financeiro","Fluxo de Caixa"]},
+  {id:116, user:12, feedId: 'financeiro-consultor', title:"Checklist de Fechamento Fiscal", text:"Organizei o passo a passo para simplificar o envio das notas fiscais no fim do mês.", tags:["Financeiro","Compliance & Auditoria"]},
+  {id:117, user:1, feedId: 'geral-lider', title:"Mensagem da Liderança Executiva", text:"Orgulho do engajamento de todos no ecossistema de conhecimento da Mind!", tags:["Institucional","Estratégia Corporativa"]}
+];
+
+let current = null;
+let activeTab = 'inicio';
+
+// Inicialização de Dropdowns
+function fillUsersSelect(){
+  const s = document.getElementById('loginUserSelect');
+  s.innerHTML = '';
+  users.forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.id;
+    o.textContent = `${u.nome} — ${u.cargo} (${u.area})`;
+    s.appendChild(o);
+  });
+}
+
+function switchAuthTab(tab){
+  document.getElementById('tabLoginBtn').classList.toggle('active', tab==='login');
+  document.getElementById('tabRegisterBtn').classList.toggle('active', tab==='register');
+  document.getElementById('loginForm').classList.toggle('hidden', tab!=='login');
+  document.getElementById('registerForm').classList.toggle('hidden', tab!=='register');
+}
+
+function login(){
+  const id = document.getElementById('loginUserSelect').value;
+  current = users.find(u => u.id == id);
+  startApp();
+}
+
+function handleRegister(e){
+  e.preventDefault();
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const area = document.getElementById('regArea').value;
+  const cargoRole = document.getElementById('regCargo').value;
+  const secPass = document.getElementById('regSecurityPass').value;
+
+  let nivel = 1;
+  if(cargoRole.includes("Gestor")) nivel = 2;
+  if(cargoRole.includes("Líder")) nivel = 3;
+
+  if(secPass !== rolePasswords[nivel]){
+    alert("Senha de Segurança incorreta para o cargo selecionado! Solicite a senha correta ao seu superior.");
+    return;
+  }
+
+  const newUser = {
+    id: Date.now(),
+    nome: name,
+    email: email,
+    area: area,
+    cargo: cargoRole.split(' ')[0],
+    nivel: nivel,
+    bio: "Novo integrante do time.",
+    skills: ["Aprendizado Contínuo"]
+  };
+
+  users.push(newUser);
+  current = newUser;
+  alert("Cadastro realizado com sucesso!");
+  startApp();
+}
+
+function startApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('appScreen').classList.remove('hidden');
+  
+  document.getElementById('topAvatar').textContent = current.nome.split(' ').map(x=>x[0]).slice(0,2).join('');
+  document.getElementById('topName').textContent = current.nome;
+  document.getElementById('topRole').textContent = `${current.cargo} • ${current.area}`;
+
+  buildSidebar();
+  showPage('inicio');
+}
+
+function logout(){
+  current = null;
+  document.getElementById('appScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  fillUsersSelect();
+}
+
+function buildSidebar(){
+  const nav = document.getElementById('sidebarNav');
+  let html = `<div class="nav-group">
+    <button class="${activeTab==='inicio'?'active':''}" onclick="showPage('inicio')">Início</button>
+    <button class="${activeTab==='meuperfil'?'active':''}" onclick="openProfile(${current.id})">Meu Perfil</button>
+    <button class="${activeTab==='pessoas'?'active':''}" onclick="showPage('pessoas')">Pessoas</button>
+    <button class="${activeTab==='conhecimento'?'active':''}" onclick="showPage('conhecimento')">Base de Conhecimento</button>
+    <button class="${activeTab==='estrutura'?'active':''}" onclick="showPage('estrutura')">Estrutura Organizacional</button>
+    ${current.nivel === 3 ? `<button class="${activeTab==='senhas'?'active':''}" onclick="showPage('senhas')">Gerenciar Senhas de Cargo</button>` : ''}
+  </div>`;
+
+  const sections = ['Geral', 'Executiva', 'Financeiro', 'Comercial', 'Projetos', 'Operacional', 'Recursos Humanos'];
+  sections.forEach(sec => {
+    const feeds = feedsStructure.filter(f => f.area === sec && current.nivel >= f.nivelRequired);
+    if(feeds.length > 0){
+      html += `<div class="nav-group"><div class="nav-title">Feed ${sec}</div>`;
+      feeds.forEach(f => {
+        html += `<button class="${activeTab===f.id?'sub active':'sub'}" onclick="showPage('${f.id}')">${f.title}</button>`;
+      });
+      html += `</div>`;
+    }
+  });
+
+  html += `<div class="nav-group"><button onclick="logout()">Sair</button></div>`;
+  nav.innerHTML = html;
+}
+
+// Filtro de Segurança para Exibição de Posts
+function allowedPost(p, viewer = current){
+  const targetFeed = feedsStructure.find(f => f.id === p.feedId);
+  if(!targetFeed) return true;
+  if (viewer.nivel < targetFeed.nivelRequired) return false;
+  if (targetFeed.area !== 'Geral' && targetFeed.area !== viewer.area && viewer.nivel < 3) return false;
+  return true;
+}
+
+function visiblePosts(feedId){
+  let filtered = posts.filter(p => allowedPost(p, current));
+  if(feedId && feedId !== 'inicio') {
+    filtered = filtered.filter(p => p.feedId === feedId);
+  }
+  return filtered;
+}
+
+function showPage(page){
+  activeTab = page;
+  buildSidebar();
+  const c = document.getElementById('content');
+
+  if(page==='inicio') c.innerHTML = home();
+  else if(page==='pessoas') c.innerHTML = people();
+  else if(page==='conhecimento') c.innerHTML = knowledge();
+  else if(page==='estrutura') renderOrgChartPage();
+  else if(page==='senhas') c.innerHTML = passwordManagementPage();
+  else {
+    const fInfo = feedsStructure.find(f => f.id === page);
+    if(fInfo) c.innerHTML = renderFeedPage(fInfo);
+  }
+}
+
+function home(){
+  const vp = visiblePosts();
+  return `<div class="page-title">
+    <div><h2>Olá, ${current.nome.split(' ')[0]} 👋</h2><div class="muted">Visão geral da sua área e dos conhecimentos disponíveis.</div></div>
+    <button class="btn primary" onclick="openModal('postModal')">+ Compartilhar Conhecimento</button>
+  </div>
+  <div class="notice">Você está conectado como <strong>${current.cargo}</strong> (${current.area}). Todos os conteúdos são filtrados com base no seu nível de permissão corporativa.</div>
+  <div class="grid">
+   <div class="card"><div class="muted">Publicações Visíveis</div><div class="stat">${vp.length}</div></div>
+   <div class="card"><div class="muted">Pessoas na sua Área</div><div class="stat">${users.filter(u=>u.area===current.area).length}</div></div>
+   <div class="card"><div class="muted">Seu Nível de Acesso</div><div class="stat">${current.cargo}</div></div>
+  </div>
+  <div class="feed">${vp.slice(0,6).map(postCard).join('')}</div>`;
+}
+
+function renderFeedPage(fInfo){
+  const vp = visiblePosts(fInfo.id);
+  return `<div class="page-title">
+    <div><h2>Feed: ${fInfo.title}</h2><div class="muted">Exibindo publicações de ${fInfo.title}.</div></div>
+    <button class="btn primary" onclick="openModal('postModal', '${fInfo.id}')">+ Publicar neste Feed</button>
+  </div>
+  <div class="feed">${vp.length ? vp.map(postCard).join('') : '<div class="card muted">Nenhuma publicação cadastrada neste feed.</div>'}</div>`;
+}
+
+function postCard(p){
+  const u = users.find(x => x.id === p.user);
+  const fInfo = feedsStructure.find(f => f.id === p.feedId);
+  return `<article class="post">
+    <div class="post-head" onclick="openProfile(${u ? u.id : ''})">
+      <div class="avatar">${u ? u.nome.split(' ').map(x=>x[0]).slice(0,2).join('') : 'U'}</div>
+      <div>
+        <strong>${u ? u.nome : 'Usuário'}</strong>
+        <div class="muted">${u ? u.cargo : ''} • ${u ? u.area : ''} | <span style="color:var(--primary)">${fInfo ? fInfo.title : 'Geral'}</span></div>
+      </div>
+    </div>
+    <h3>${p.title}</h3>
+    <p>${p.text}</p>
+    ${p.tags ? p.tags.map(t=>`<span class="tag">${t}</span>`).join('') : ''}
+    <div class="actions">
+      <button class="btn ghost" onclick="alert('Conhecimento salvo com sucesso.')">Salvar</button>
+      <button class="btn ghost" onclick="alert('Reconhecimento enviado.')">Reconhecer</button>
+    </div>
+  </article>`;
+}
+
+// PÁGINA DE PERFIL INDIVIDUAL SEGURA
+function openProfile(userId){
+  const u = users.find(x => x.id === userId);
+  if(!u) return;
+  
+  activeTab = 'meuperfil';
+  buildSidebar();
+  
+  // O filtro de segurança aplica a permissão do USUÁRIO LOGADO vendo o perfil do Usuário 'u'
+  const userPosts = posts.filter(p => p.user === u.id && allowedPost(p, current));
+  const isMe = current.id === u.id;
+
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">${u.nome.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2 style="margin:0">${u.nome}</h2>
+            <div class="muted" style="margin-top:4px">${u.cargo} • ${u.area} | ${u.email}</div>
+          </div>
+          ${isMe ? `<button class="btn ghost" onclick="openEditProfileModal()">Editar Perfil</button>` : ''}
+        </div>
+        <p style="margin:14px 0 10px;color:#475467">${u.bio || 'Nenhuma biografia informada.'}</p>
+        <div class="skills-list">
+          ${u.skills && u.skills.length ? u.skills.map(s=>`<span class="skill-badge">${s}</span>`).join('') : '<span class="muted">Nenhuma competência adicionada.</span>'}
+        </div>
+      </div>
+    </div>
+
+    <div class="page-title">
+      <h3>Publicações do Colaborador (${userPosts.length})</h3>
+    </div>
+    <div class="feed">
+      ${userPosts.length ? userPosts.map(postCard).join('') : '<div class="card muted">Nenhuma publicação visível para o seu nível de acesso neste perfil.</div>'}
+    </div>
+  `;
+}
+
+function people(){
+  return `<div class="page-title"><div><h2>Quadro de Pessoas (${users.length})</h2><div class="muted">Lista completa de colaboradores da organização.</div></div></div>
+  <table><thead><tr><th>Nome</th><th>E-mail</th><th>Área</th><th>Cargo</th><th>Ação</th></tr></thead><tbody>
+  ${users.map(u => `<tr>
+    <td><strong>${u.nome}</strong></td>
+    <td>${u.email}</td>
+    <td>${u.area}</td>
+    <td class="role">${u.cargo}</td>
+    <td><button class="btn ghost" style="padding:6px 12px;font-size:12px" onclick="openProfile(${u.id})">Ver Perfil</button></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function knowledge(){
+  const cats = areaCategories[current.area] || ["Conhecimento Geral"];
+  return `<div class="page-title"><div><h2>Base de Conhecimento — ${current.area}</h2><div class="muted">Áreas temáticas e de capacitação corporativa.</div></div></div>
+  <div class="grid">
+  ${cats.map((x,i)=>`<div class="card"><strong>${x}</strong><div class="muted" style="margin-top:8px">${i+3} artigos e guias gravados</div></div>`).join('')}
+  </div>`;
+}
+
+// GERENCIAMENTO DE SENHAS DE CARGO (Apenas Líderes)
+function passwordManagementPage(){
+  if(current.nivel < 3) return `<div class="card danger">Acesso Restrito a Líderes.</div>`;
+  return `<div class="page-title"><div><h2>Gerenciamento de Senhas de Segurança</h2><div class="muted">Defina as senhas necessárias para novos cadastros por nível hierárquico.</div></div></div>
+  <div class="card" style="max-width:500px">
+    <form onsubmit="saveRolePasswords(event)">
+      <label>Senha para Cargo de Consultor (Nível 1)</label>
+      <input type="text" id="passLevel1" value="${rolePasswords[1]}" required>
+
+      <label>Senha para Cargo de Gestor (Nível 2)</label>
+      <input type="text" id="passLevel2" value="${rolePasswords[2]}" required>
+
+      <label>Senha para Cargo de Líder (Nível 3)</label>
+      <input type="text" id="passLevel3" value="${rolePasswords[3]}" required>
+
+      <button type="submit" class="btn primary" style="margin-top:20px;width:100%">Atualizar Senhas de Segurança</button>
+    </form>
+  </div>`;
+}
+
+function saveRolePasswords(e){
+  e.preventDefault();
+  rolePasswords[1] = document.getElementById('passLevel1').value;
+  rolePasswords[2] = document.getElementById('passLevel2').value;
+  rolePasswords[3] = document.getElementById('passLevel3').value;
+  alert("Senhas de segurança atualizadas com sucesso!");
+}
+
+// ORGANOGRAMA INTERATIVO (CANVAS ZOOM / PAN)
+let zoomScale = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let startX, startY;
+
+function renderOrgChartPage(){
+  const c = document.getElementById('content');
+  c.innerHTML = `
+    <div class="page-title">
+      <div><h2>Estrutura Organizacional (Organograma)</h2><div class="muted">Clique nas caixas dos colaboradores para acessar o perfil. Arraste e faça zoom para navegar.</div></div>
+    </div>
+    <div class="org-viewport" id="orgViewport">
+      <div class="org-controls">
+        <button class="btn ghost" onclick="changeZoom(0.1)">+</button>
+        <button class="btn ghost" onclick="changeZoom(-0.1)">-</button>
+        <button class="btn ghost" onclick="resetZoom()">Reset</button>
+      </div>
+      <div class="org-canvas" id="orgCanvas">
+        ${buildOrgTreeHTML()}
+      </div>
+    </div>
+  `;
+  setupOrgPanZoom();
+}
+
+function buildOrgTreeHTML(){
+  const leaders = users.filter(u => u.nivel === 3);
+  const managers = users.filter(u => u.nivel === 2);
+  const consultants = users.filter(u => u.nivel === 1);
+
+  return `
+    <div class="org-tree">
+      ${leaders.map(l => `
+        <div class="org-node" onclick="openProfile(${l.id})">
+          <div class="node-role">Líder / Diretor</div>
+          <div class="node-name">${l.nome}</div>
+          <div class="node-area">${l.area}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="height:2px;width:80%;background:var(--line)"></div>
+    <div class="org-tree">
+      ${managers.map(m => `
+        <div class="org-node" onclick="openProfile(${m.id})">
+          <div class="node-role">Gestor / Gerente</div>
+          <div class="node-name">${m.nome}</div>
+          <div class="node-area">${m.area}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="height:2px;width:90%;background:var(--line)"></div>
+    <div class="org-tree">
+      ${consultants.map(c => `
+        <div class="org-node" onclick="openProfile(${c.id})">
+          <div class="node-role">Consultor / Analista</div>
+          <div class="node-name">${c.nome}</div>
+          <div class="node-area">${c.area}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function setupOrgPanZoom(){
+  const viewport = document.getElementById('orgViewport');
+  const canvas = document.getElementById('orgCanvas');
+
+  viewport.addEventListener('mousedown', (e) => {
+    if(e.target.closest('.org-controls') || e.target.closest('.org-node')) return;
+    isDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if(!isDragging) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => { isDragging = false; });
+}
+
+function changeZoom(delta){
+  zoomScale = Math.min(Math.max(0.4, zoomScale + delta), 2);
+  updateTransform();
+}
+
+function resetZoom(){
+  zoomScale = 1; panX = 0; panY = 0;
+  updateTransform();
+}
+
+function updateTransform(){
+  const canvas = document.getElementById('orgCanvas');
+  if(canvas) canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+}
+
+/* Modais e Ações */
+function openModal(modalId, defaultFeedId = null){
+  if(modalId === 'postModal'){
+    const feedSelect = document.getElementById('postFeedTarget');
+    const catSelect = document.getElementById('postCategory');
+    feedSelect.innerHTML = ''; catSelect.innerHTML = '';
+
+    const allowedFeeds = feedsStructure.filter(f => f.nivelRequired === current.nivel && (f.area === 'Geral' || f.area === current.area || current.nivel >= 3));
+    allowedFeeds.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id; opt.textContent = f.title;
+      if(defaultFeedId && f.id === defaultFeedId) opt.selected = true;
+      feedSelect.appendChild(opt);
+    });
+
+    const cats = areaCategories[current.area] || ["Conhecimento Geral"];
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      catSelect.appendChild(opt);
+    });
+  }
+  document.getElementById(modalId).classList.remove('hidden');
+}
+
+function closeModal(modalId){
+  document.getElementById(modalId).classList.add('hidden');
+}
+
+function savePost(e){
+  e.preventDefault();
+  const title = document.getElementById('postTitle').value;
+  const text = document.getElementById('postText').value;
+  const feedId = document.getElementById('postFeedTarget').value;
+  const category = document.getElementById('postCategory').value;
+
+  posts.unshift({
+    id: Date.now(),
+    user: current.id,
+    feedId: feedId,
+    title: title,
+    text: text,
+    tags: [current.area, category]
+  });
+
+  closeModal('postModal');
+  showPage(activeTab === 'inicio' ? 'inicio' : feedId);
+}
+
+function openEditProfileModal(){
+  document.getElementById('editBio').value = current.bio || '';
+  document.getElementById('editSkills').value = current.skills ? current.skills.join(', ') : '';
+  openModal('editProfileModal');
+}
+
+function saveProfile(e){
+  e.preventDefault();
+  current.bio = document.getElementById('editBio').value;
+  const sk = document.getElementById('editSkills').value;
+  current.skills = sk ? sk.split(',').map(s=>s.trim()) : [];
+  closeModal('editProfileModal');
+  openProfile(current.id);
+}
+
+fillUsersSelect();
+</script>
+</body>
+</html>

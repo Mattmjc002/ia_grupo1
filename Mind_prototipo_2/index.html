@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind — Plataforma Corporativa</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e6e9ef;--primary:#3157d5;--primary2:#243fa8;--soft:#eef2ff;--danger:#c0392b}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#eef2ff,#f8fafc)}
+.login-card{width:min(430px,100%);background:white;border:1px solid var(--line);border-radius:20px;padding:32px;box-shadow:0 20px 60px #182b6315}
+.logo{font-size:30px;font-weight:800;letter-spacing:-1px}.logo span{color:var(--primary)}
+.login-card h1{margin:28px 0 8px;font-size:25px}.login-card p{color:var(--muted);line-height:1.5}
+label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--primary)}
+.btn{border:0;border-radius:10px;padding:12px 16px;cursor:pointer;font-weight:700}.primary{background:var(--primary);color:#fff}.primary:hover{background:var(--primary2)}
+.app{min-height:100vh}.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:5}
+.user-mini{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800;color:var(--primary)}
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 70px)}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:20px 14px;max-height:calc(100vh - 70px);overflow-y:auto}
+.nav-group{margin-bottom:14px}
+.nav-title{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;padding:8px 12px 4px}
+.nav button{width:100%;background:none;border:0;text-align:left;padding:9px 12px;border-radius:8px;cursor:pointer;color:#475467;font-size:13px;display:block}
+.nav button.sub{padding-left:24px;font-size:12px}
+.nav button.active,.nav button:hover{background:var(--soft);color:var(--primary);font-weight:700}
+main{padding:28px;max-width:1200px;width:100%;margin:auto}
+.page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.page-title h2{margin:0}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}.stat{font-size:28px;font-weight:800;margin-top:7px}
+.feed{display:grid;gap:14px;margin-top:16px}.post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}.post-head{display:flex;gap:10px;align-items:center}.post h3{margin:12px 0 7px;font-size:17px}.post p{line-height:1.55;color:#475467}.tag{display:inline-block;background:var(--soft);color:var(--primary);font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;margin-right:5px}.actions{display:flex;gap:8px;margin-top:14px}.ghost{background:#f8fafc;border:1px solid var(--line);color:#475467}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--line);font-size:14px}th{background:#f8fafc}.role{font-weight:700}
+.notice{padding:12px 14px;background:var(--soft);border-radius:10px;color:#334155;font-size:13px;margin-bottom:18px}
+
+/* Modal Style */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(23,32,51,0.5);display:grid;place-items:center;z-index:100;backdrop-filter:blur(2px)}
+.modal-card{width:min(520px,92%);background:#fff;border-radius:18px;padding:26px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-header h3{margin:0;font-size:20px}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{display:none}.grid{grid-template-columns:1fr}.topbar{padding:0 16px}main{padding:18px}}
+</style>
+</head>
+<body>
+
+<section id="login" class="login">
+  <div class="login-card">
+    <div class="logo">M<span>i</span>nd</div>
+    <h1>Entrar na plataforma</h1>
+    <p>Protótipo funcional da plataforma corporativa. Escolha um usuário para simular os diferentes níveis de acesso.</p>
+    <label>Usuário</label>
+    <select id="loginUser"></select>
+    <button class="btn primary" style="width:100%;margin-top:20px" onclick="login()">Entrar</button>
+  </div>
+</section>
+
+<section id="app" class="app hidden">
+  <header class="topbar">
+    <div class="logo">M<span>i</span>nd</div>
+    <div class="user-mini"><div class="avatar" id="topAvatar"></div><div><strong id="topName"></strong><div class="muted" id="topRole"></div></div></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="nav" id="sidebarNav"></div>
+    </aside>
+    <main>
+      <div id="content"></div>
+    </main>
+  </div>
+</section>
+
+<!-- Modal de Nova Postagem -->
+<div id="postModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Novo Conhecimento</h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    <form onsubmit="savePost(event)">
+      <label>Título do Conhecimento</label>
+      <input type="text" id="postTitle" placeholder="Ex: Otimização de processos..." required>
+      
+      <label>Feed de Destino</label>
+      <select id="postFeedTarget" required></select>
+
+      <label>Categoria / Área Temática</label>
+      <select id="postCategory" required></select>
+      
+      <label>Descrição detalhada</label>
+      <textarea id="postText" rows="4" placeholder="Compartilhe os detalhes, aprendizados ou procedimentos..." required></textarea>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn primary">Publicar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const users=[
+ {id:1,nome:"Ana Souza",area:"Institucional",cargo:"Líder",nivel:3},
+ {id:2,nome:"Carlos Mendes",area:"Financeiro",cargo:"Líder",nivel:3},
+ {id:3,nome:"Mariana Costa",area:"Comercial",cargo:"Gestor",nivel:2},
+ {id:4,nome:"Rafael Lima",area:"Comercial",cargo:"Consultor",nivel:1},
+ {id:5,nome:"Lucas Alves",area:"Projetos",cargo:"Gerente",nivel:2},
+ {id:6,nome:"Julia Martins",area:"Projetos",cargo:"Consultor",nivel:1},
+ {id:7,nome:"Pedro Rocha",area:"Operacional",cargo:"Líder",nivel:3},
+ {id:8,nome:"Beatriz Silva",area:"Recursos Humanos",cargo:"Gestor",nivel:2},
+];
+
+const areaCategories={
+ "Comercial": ["Processos de Vendas", "Pipeline de Clientes", "Negociação", "Prospecção"],
+ "Projetos": ["Metodologias Ágeis", "Gestão de Escopo", "Entregas", "Automação de Tarefas"],
+ "Operacional": ["Otimização de Processos", "Logística Interna", "Automação", "Padrões Operacionais"],
+ "Recursos Humanos": ["Onboarding & Treinamento", "Clima Organizacional", "Benefícios", "Desenvolvimento"],
+ "Financeiro": ["Planejamento Orçamentário", "Fluxo de Caixa", "Compliance", "Controladoria"],
+ "Institucional": ["Estratégia Corporativa", "Governança", "Comunicação Interna", "Relações"],
+ "Executiva": ["Visão Estratégica", "Inovação", "Liderança", "Diretrizes"]
+};
+
+const feedsStructure = [
+ { id: 'geral', title: 'Geral', area: 'Geral', nivelRequired: 1 },
+ { id: 'geral-lider', title: 'Líder Geral', area: 'Geral', nivelRequired: 3 },
+ { id: 'geral-gestor', title: 'Gestor Geral', area: 'Geral', nivelRequired: 2 },
+ { id: 'geral-consultor', title: 'Consultor Geral', area: 'Geral', nivelRequired: 1 },
+
+ { id: 'executiva-geral', title: 'Executiva Geral', area: 'Executiva', nivelRequired: 1 },
+ { id: 'executiva-lider', title: 'Líder Executiva', area: 'Executiva', nivelRequired: 3 },
+ { id: 'executiva-gestor', title: 'Gestor Executiva', area: 'Executiva', nivelRequired: 2 },
+ { id: 'executiva-consultor', title: 'Consultor Executiva', area: 'Executiva', nivelRequired: 1 },
+
+ { id: 'financeiro-geral', title: 'Financeiro Geral', area: 'Financeiro', nivelRequired: 1 },
+ { id: 'financeiro-lider', title: 'Líder Financeiro', area: 'Financeiro', nivelRequired: 3 },
+ { id: 'financeiro-gestor', title: 'Gestor Financeiro', area: 'Financeiro', nivelRequired: 2 },
+ { id: 'financeiro-consultor', title: 'Consultor Financeiro', area: 'Financeiro', nivelRequired: 1 },
+
+ { id: 'comercial-geral', title: 'Comercial Geral', area: 'Comercial', nivelRequired: 1 },
+ { id: 'comercial-lider', title: 'Líder Comercial', area: 'Comercial', nivelRequired: 3 },
+ { id: 'comercial-gestor', title: 'Gestor Comercial', area: 'Comercial', nivelRequired: 2 },
+ { id: 'comercial-consultor', title: 'Consultor Comercial', area: 'Comercial', nivelRequired: 1 },
+
+ { id: 'projetos-geral', title: 'Projetos Geral', area: 'Projetos', nivelRequired: 1 },
+ { id: 'projetos-lider', title: 'Líder Projetos', area: 'Projetos', nivelRequired: 3 },
+ { id: 'projetos-gestor', title: 'Gestor Projetos', area: 'Projetos', nivelRequired: 2 },
+ { id: 'projetos-consultor', title: 'Consultor Projetos', area: 'Projetos', nivelRequired: 1 },
+
+ { id: 'operacional-geral', title: 'Operacional Geral', area: 'Operacional', nivelRequired: 1 },
+ { id: 'operacional-lider', title: 'Líder Operacional', area: 'Operacional', nivelRequired: 3 },
+ { id: 'operacional-gestor', title: 'Gestor Operacional', area: 'Operacional', nivelRequired: 2 },
+ { id: 'operacional-consultor', title: 'Consultor Operacional', area: 'Operacional', nivelRequired: 1 },
+
+ { id: 'rh-geral', title: 'Recursos Humanos Geral', area: 'Recursos Humanos', nivelRequired: 1 },
+ { id: 'rh-lider', title: 'Líder Recursos Humanos', area: 'Recursos Humanos', nivelRequired: 3 },
+ { id: 'rh-gestor', title: 'Gestor Recursos Humanos', area: 'Recursos Humanos', nivelRequired: 2 },
+ { id: 'rh-consultor', title: 'Consultor Recursos Humanos', area: 'Recursos Humanos', nivelRequired: 1 }
+];
+
+const posts=[
+ {user:4, feedId: 'comercial-consultor', title:"Melhoria no processo comercial",text:"Identifiquei uma etapa repetitiva no cadastro de clientes e documentei uma forma de reduzir o retrabalho.",tags:["Comercial","Processos de Vendas"]},
+ {user:6, feedId: 'projetos-consultor', title:"Lição aprendida no projeto Orion",text:"Durante o projeto, testamos uma nova organização das tarefas e conseguimos centralizar melhor as informações da equipe.",tags:["Projetos","Metodologias Ágeis"]},
+ {user:3, feedId: 'comercial-gestor', title:"Novo procedimento para a equipe",text:"Registrei o procedimento atualizado para que os consultores possam consultar o mesmo padrão de atendimento.",tags:["Comercial","Pipeline de Clientes"]},
+ {user:7, feedId: 'operacional-lider', title:"Otimização operacional",text:"Mapeamos uma atividade operacional e encontramos pontos que podem ser automatizados futuramente.",tags:["Operacional","Automação"]}
+];
+
+let current=null;
+let activeTab='inicio';
+
+function fillUsers(){
+ const s=document.getElementById('loginUser');
+ users.forEach(u=>{const o=document.createElement('option');o.value=u.id;o.textContent=`${u.nome} — ${u.cargo} ${u.area}`;s.appendChild(o)});
+}
+
+function login(){
+ current=users.find(u=>u.id==document.getElementById('loginUser').value);
+ document.getElementById('login').classList.add('hidden');
+ document.getElementById('app').classList.remove('hidden');
+ document.getElementById('topAvatar').textContent=current.nome.split(' ').map(x=>x[0]).slice(0,2).join('');
+ document.getElementById('topName').textContent=current.nome;
+ document.getElementById('topRole').textContent=`${current.cargo} • ${current.area}`;
+ buildSidebar();
+ showPage('inicio');
+}
+
+function logout(){
+ current=null;
+ document.getElementById('app').classList.add('hidden');
+ document.getElementById('login').classList.remove('hidden');
+}
+
+function buildSidebar(){
+ const nav = document.getElementById('sidebarNav');
+ let html = `<div class="nav-group">
+   <button class="${activeTab==='inicio'?'active':''}" onclick="showPage('inicio')">Início</button>
+   <button class="${activeTab==='pessoas'?'active':''}" onclick="showPage('pessoas')">Pessoas</button>
+   <button class="${activeTab==='conhecimento'?'active':''}" onclick="showPage('conhecimento')">Base de Conhecimento</button>
+   ${current.nivel>=2?`<button class="${activeTab==='estrutura'?'active':''}" onclick="showPage('estrutura')">Estrutura</button>`:''}
+ </div>`;
+
+ const sections = ['Geral', 'Executiva', 'Financeiro', 'Comercial', 'Projetos', 'Operacional', 'Recursos Humanos'];
+ sections.forEach(sec => {
+   const feeds = feedsStructure.filter(f => f.area === sec && current.nivel >= f.nivelRequired);
+   if(feeds.length > 0){
+     html += `<div class="nav-group"><div class="nav-title">Feed ${sec}</div>`;
+     feeds.forEach(f => {
+       html += `<button class="${activeTab===f.id?'sub active':'sub'}" onclick="showPage('${f.id}')">${f.title}</button>`;
+     });
+     html += `</div>`;
+   }
+ });
+
+ html += `<div class="nav-group"><button onclick="logout()">Sair</button></div>`;
+ nav.innerHTML = html;
+}
+
+function allowedPost(p){
+ const targetFeed = feedsStructure.find(f => f.id === p.feedId);
+ if(!targetFeed) return true;
+ if (current.nivel < targetFeed.nivelRequired) return false;
+ if (targetFeed.area !== 'Geral' && targetFeed.area !== current.area && current.nivel < 3) return false;
+ return true;
+}
+
+function visiblePosts(feedId){
+ let filtered = posts.filter(allowedPost);
+ if(feedId && feedId !== 'inicio') {
+   filtered = filtered.filter(p => p.feedId === feedId);
+ }
+ return filtered;
+}
+
+function showPage(page){
+ activeTab = page;
+ buildSidebar();
+ const c=document.getElementById('content');
+ 
+ if(page==='inicio') c.innerHTML=home();
+ else if(page==='pessoas') c.innerHTML=people();
+ else if(page==='conhecimento') c.innerHTML=knowledge();
+ else if(page==='estrutura') c.innerHTML=structure();
+ else {
+   const fInfo = feedsStructure.find(f => f.id === page);
+   c.innerHTML = renderFeedPage(fInfo);
+ }
+}
+
+function home(){
+ const vp=visiblePosts();
+ return `<div class="page-title"><div><h2>Olá, ${current.nome.split(' ')[0]} 👋</h2><div class="muted">Visão geral da sua área e dos conhecimentos disponíveis.</div></div><button class="btn primary" onclick="openModal()">+ Compartilhar conhecimento</button></div>
+ <div class="notice">Você está acessando como <strong>${current.cargo}</strong> da área <strong>${current.area}</strong>. Exibindo os conteúdos correspondentes ao seu nível de acesso.</div>
+ <div class="grid">
+  <div class="card"><div class="muted">Publicações visíveis</div><div class="stat">${vp.length}</div></div>
+  <div class="card"><div class="muted">Pessoas da sua área</div><div class="stat">${users.filter(u=>u.area===current.area).length}</div></div>
+  <div class="card"><div class="muted">Nível de acesso</div><div class="stat">${current.cargo}</div></div>
+ </div>
+ <div class="feed">${vp.slice(0,5).map(postCard).join('')}</div>`;
+}
+
+function renderFeedPage(fInfo){
+ const vp = visiblePosts(fInfo.id);
+ const canPostInThisFeed = (fInfo.nivelRequired === current.nivel);
+ 
+ return `<div class="page-title">
+   <div>
+     <h2>Feed: ${fInfo.title}</h2>
+     <div class="muted">Exibindo publicações direcionadas a ${fInfo.title}.</div>
+   </div>
+   <button class="btn primary" onclick="openModal('${fInfo.id}')">+ Publicar neste Feed</button>
+ </div>
+ <div class="feed">${vp.length ? vp.map(postCard).join('') : '<div class="card muted">Nenhuma publicação cadastrada neste feed.</div>'}</div>`;
+}
+
+function postCard(p){
+ const u=users.find(x=>x.id===p.user);
+ const fInfo = feedsStructure.find(f => f.id === p.feedId);
+ return `<article class="post">
+   <div class="post-head">
+     <div class="avatar">${u ? u.nome.split(' ').map(x=>x[0]).slice(0,2).join('') : 'U'}</div>
+     <div>
+       <strong>${u ? u.nome : 'Usuário'}</strong>
+       <div class="muted">${u ? u.cargo : ''} • ${u ? u.area : ''} | <small style="color:var(--primary)">${fInfo ? fInfo.title : 'Geral'}</small></div>
+     </div>
+   </div>
+   <h3>${p.title}</h3>
+   <p>${p.text}</p>
+   ${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}
+   <div class="actions">
+     <button class="btn ghost" onclick="alert('Conhecimento salvo.')">Salvar</button>
+     <button class="btn ghost" onclick="alert('Reconhecimento enviado para ${u ? u.nome : 'o autor'}.')">Reconhecer</button>
+   </div>
+ </article>`;
+}
+
+function people(){
+ const arr=users.filter(u=>current.nivel>=3 || u.area===current.area);
+ return `<div class="page-title"><div><h2>Pessoas</h2><div class="muted">Usuários que você pode visualizar pela sua hierarquia.</div></div></div>
+ <table><thead><tr><th>Nome</th><th>Área</th><th>Cargo</th><th>Nível</th></tr></thead><tbody>${arr.map(u=>`<tr><td><strong>${u.nome}</strong></td><td>${u.area}</td><td class="role">${u.cargo}</td><td>${u.nivel===3?'Líder':u.nivel===2?'Gestor':'Consultor'}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function knowledge(){
+ const cats = areaCategories[current.area] || ["Geral", "Processos", "Projetos"];
+ return `<div class="page-title"><div><h2>Base de Conhecimento — ${current.area}</h2><div class="muted">Categorias estratégicas da sua área.</div></div></div>
+ <div class="grid">
+ ${cats.map((x,i)=>`<div class="card"><strong>${x}</strong><div class="muted" style="margin-top:8px">${i+2} materiais registrados</div></div>`).join('')}
+ </div>`;
+}
+
+function structure(){
+ if(current.nivel<2)return '';
+ const byArea={};users.forEach(u=>(byArea[u.area]??=[]).push(u));
+ return `<div class="page-title"><div><h2>Estrutura Organizacional</h2><div class="muted">Visualização condicionada ao nível de acesso.</div></div></div>
+ <div class="grid">${Object.entries(byArea).map(([area,arr])=>`<div class="card"><strong>${area}</strong>${arr.map(u=>`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><strong>${u.nome}</strong><div class="muted">${u.cargo}</div></div>`).join('')}</div>`).join('')}</div>`;
+}
+
+/* Funções do Modal de Postagem */
+function openModal(defaultFeedId = null){
+ const modal = document.getElementById('postModal');
+ const feedSelect = document.getElementById('postFeedTarget');
+ const catSelect = document.getElementById('postCategory');
+ 
+ feedSelect.innerHTML = '';
+ catSelect.innerHTML = '';
+
+ // Popula Feeds autorizados a publicar (apenas os de exatamente o mesmo nivel do usuario)
+ const allowedFeeds = feedsStructure.filter(f => f.nivelRequired === current.nivel && (f.area === 'Geral' || f.area === current.area || current.nivel >= 3));
+ allowedFeeds.forEach(f => {
+   const opt = document.createElement('option');
+   opt.value = f.id;
+   opt.textContent = f.title;
+   if(defaultFeedId && f.id === defaultFeedId) opt.selected = true;
+   feedSelect.appendChild(opt);
+ });
+
+ // Popula Categorias conforme a área do usuário
+ const cats = areaCategories[current.area] || ["Conhecimento Geral"];
+ cats.forEach(c => {
+   const opt = document.createElement('option');
+   opt.value = c;
+   opt.textContent = c;
+   catSelect.appendChild(opt);
+ });
+
+ modal.classList.remove('hidden');
+}
+
+function closeModal(){
+ document.getElementById('postModal').classList.add('hidden');
+ document.getElementById('postTitle').value = '';
+ document.getElementById('postText').value = '';
+}
+
+function savePost(e){
+ e.preventDefault();
+ const title = document.getElementById('postTitle').value;
+ const text = document.getElementById('postText').value;
+ const feedId = document.getElementById('postFeedTarget').value;
+ const category = document.getElementById('postCategory').value;
+
+ if(!title || !text || !feedId) return;
+
+ posts.unshift({
+   user: current.id,
+   feedId: feedId,
+   title: title,
+   text: text,
+   tags: [current.area, category]
+ });
+
+ closeModal();
+ showPage(activeTab === 'inicio' ? 'inicio' : feedId);
+}
+
+fillUsers();
+</script>
+</body>
+</html>
