@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind — Plataforma Corporativa de Conhecimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --card-2:#f8fafc;
+  --text:#172033; --muted:#667085; --line:#e4e8f0;
+  --primary:#3157d5; --primary2:#243fa8; --soft:#eef2ff;
+  --danger:#c0392b; --danger-soft:#fdeceb; --success:#1e8e5a; --warn:#b26a00;
+  --on-primary:#ffffff;
+  --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1320; --card:#151b2b; --card-2:#1b2233;
+    --text:#e8ecf5; --muted:#98a2b3; --line:#28314a;
+    --primary:#7d9bff; --primary2:#98b0ff; --soft:#1d2740;
+    --danger:#f08a7f; --danger-soft:#33211f; --success:#5bd0a0; --warn:#e5b266;
+    --on-primary:#0e1320;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1320; --card:#151b2b; --card-2:#1b2233;
+  --text:#e8ecf5; --muted:#98a2b3; --line:#28314a;
+  --primary:#7d9bff; --primary2:#98b0ff; --soft:#1d2740;
+  --danger:#f08a7f; --danger-soft:#33211f; --success:#5bd0a0; --warn:#e5b266;
+  --on-primary:#0e1320;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+a{color:var(--primary)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- Auth ---------- */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login-card{width:min(520px,100%);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:var(--shadow)}
+.logo{font-size:28px;font-weight:800;letter-spacing:-1.2px}
+.logo span{color:var(--primary)}
+.logo-sub{color:var(--muted);font-size:13px;margin-top:2px}
+.auth-tabs{display:flex;gap:6px;margin:22px 0 4px;border-bottom:1px solid var(--line)}
+.auth-tabs button{padding:10px 14px;border:none;background:none;cursor:pointer;font-weight:700;color:var(--muted);border-bottom:2px solid transparent}
+.auth-tabs button.active{color:var(--primary);border-bottom-color:var(--primary)}
+.helper{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.5}
+
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px}
+select,input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:var(--card-2);outline:none;transition:border-color .12s}
+textarea{resize:vertical;line-height:1.55}
+select:focus,input:focus,textarea:focus{border-color:var(--primary);background:var(--card)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.field-row{grid-template-columns:1fr}}
+
+.btn{border:0;border-radius:10px;padding:10px 15px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;transition:background .12s,border-color .12s,transform .06s}
+.btn:active{transform:translateY(1px)}
+.btn.block{width:100%}
+.primary{background:var(--primary);color:var(--on-primary)}
+.primary:hover{background:var(--primary2)}
+.ghost{background:var(--card);border:1px solid var(--line);color:var(--text)}
+.ghost:hover{border-color:var(--primary);color:var(--primary)}
+.subtle{background:transparent;border:1px solid transparent;color:var(--muted);padding:7px 10px}
+.subtle:hover{background:var(--soft);color:var(--primary)}
+.danger-btn{background:var(--danger-soft);color:var(--danger);border:1px solid transparent}
+.danger-btn:hover{border-color:var(--danger)}
+.small{padding:6px 10px;font-size:12.5px;border-radius:8px}
+
+/* ---------- App shell ---------- */
+.topbar{height:64px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:30}
+.topbar .logo{font-size:22px}
+.search-wrap{flex:1;max-width:520px;position:relative}
+.search-wrap input{padding-left:34px;border-radius:999px}
+.search-ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+.top-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;display:grid;place-items:center;position:relative}
+.icon-btn:hover{border-color:var(--primary);color:var(--primary)}
+.badge-dot{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;padding:0 4px}
+.user-mini{display:flex;align-items:center;gap:10px;cursor:pointer;padding:5px 9px 5px 5px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+.user-mini:hover{border-color:var(--primary)}
+.user-mini .muted{font-size:11.5px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;color:var(--primary);flex-shrink:0;font-size:13px}
+.avatar.lg{width:76px;height:76px;font-size:26px}
+.menu-btn{display:none}
+@media (max-width:900px){
+  .menu-btn{display:grid}
+  .user-mini .who{display:none}
+  .search-wrap{max-width:none}
+}
+
+.layout{display:grid;grid-template-columns:262px minmax(0,1fr)}
+.sidebar{background:var(--card);border-right:1px solid var(--line);padding:16px 12px 40px;height:calc(100vh - 64px);position:sticky;top:64px;overflow-y:auto}
+.nav-group{margin-bottom:14px}
+.nav-title{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.3px;padding:8px 10px 4px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:8px}
+.nav-title:hover{background:var(--card-2)}
+.nav-title .chev{transition:transform .15s;font-size:10px}
+.nav-title.collapsed .chev{transform:rotate(-90deg)}
+.nav button.item{width:100%;background:none;border:0;text-align:left;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13.5px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav button.item .count{font-size:11px;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.nav button.item.sub{padding-left:18px;font-size:13px}
+.nav button.item.active,.nav button.item:hover{background:var(--soft);color:var(--primary);font-weight:600}
+.nav button.item.active .count{background:transparent;border-color:currentColor;color:inherit}
+.backdrop{display:none}
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;left:0;top:64px;bottom:0;width:272px;z-index:25;transform:translateX(-100%);transition:transform .18s ease;height:auto}
+  .sidebar.open{transform:none;box-shadow:var(--shadow)}
+  .backdrop.show{display:block;position:fixed;inset:64px 0 0 0;background:rgba(10,14,24,.45);z-index:20}
+}
+
+main{padding:26px 26px 60px;max-width:1180px;width:100%;margin:0 auto}
+@media (max-width:640px){main{padding:18px 14px 50px}}
+.page-title{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.page-title h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.page-title h3{margin:0;font-size:18px}
+.muted{color:var(--muted)}
+.sub{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:70ch;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none}
+.stat{font-size:26px;font-weight:800;margin-top:6px;letter-spacing:-.5px}
+.notice{padding:13px 15px;background:var(--soft);border-radius:10px;color:var(--text);font-size:13.5px;margin:16px 0;border-left:3px solid var(--primary);line-height:1.55}
+.empty{border:1px dashed var(--line);border-radius:var(--radius);padding:30px;text-align:center;color:var(--muted);background:var(--card)}
+.empty strong{display:block;color:var(--text);margin-bottom:6px}
+
+/* ---------- Posts ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar select,.toolbar input{width:auto;min-width:170px;padding:8px 10px;border-radius:9px}
+.feed{display:grid;gap:14px}
+.post{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.post-head{display:flex;gap:11px;align-items:center}
+.post-head .who{cursor:pointer}
+.post-head .who:hover strong{color:var(--primary)}
+.post h3{margin:13px 0 7px;font-size:17.5px;letter-spacing:-.2px}
+.post .body{line-height:1.65;color:var(--text);white-space:pre-wrap;margin:0;font-size:14.5px}
+.meta{font-size:12.5px;color:var(--muted)}
+.chip{display:inline-block;background:var(--card-2);border:1px solid var(--line);color:var(--muted);font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 9px;margin:8px 6px 0 0}
+.chip.brand{background:var(--soft);border-color:transparent;color:var(--primary)}
+.actions{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:13px}
+.actions .on{color:var(--primary);border-color:var(--primary);background:var(--soft)}
+.comments{margin-top:13px;border-top:1px solid var(--line);padding-top:13px;display:grid;gap:11px}
+.comment{display:flex;gap:10px}
+.comment .bubble{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:9px 12px;flex:1}
+.comment .bubble p{margin:4px 0 0;font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+.comment-form{display:flex;gap:8px}
+.comment-form input{border-radius:999px}
+
+/* ---------- Profile ---------- */
+.profile-header{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;box-shadow:var(--shadow);flex-wrap:wrap}
+.skills-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.skill-badge{background:var(--soft);color:var(--primary);padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;margin-top:12px;color:var(--muted)}
+.kv b{color:var(--text);font-weight:600}
+
+/* ---------- Tables ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+th{background:var(--card-2);font-weight:600;color:var(--muted);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+
+/* ---------- Organograma ---------- */
+.org-viewport{width:100%;height:calc(100vh - 230px);min-height:460px;border:1px solid var(--line);background:var(--card-2);border-radius:16px;overflow:hidden;position:relative;cursor:grab;touch-action:none}
+.org-viewport.grabbing{cursor:grabbing}
+.org-controls{position:absolute;bottom:16px;right:16px;display:flex;gap:6px;z-index:5;background:var(--card);padding:6px;border-radius:10px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.org-hint{position:absolute;top:14px;left:14px;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:12px;color:var(--muted);box-shadow:var(--shadow)}
+.org-canvas{transform-origin:0 0;position:absolute;left:0;top:0;padding:40px}
+.tree ul{position:relative;display:flex;justify-content:center;padding:26px 0 0;margin:0;list-style:none}
+.tree li{list-style:none;position:relative;padding:26px 8px 0;display:flex;flex-direction:column;align-items:center}
+.tree li::before,.tree li::after{content:"";position:absolute;top:0;right:50%;border-top:2px solid var(--line);width:50%;height:26px}
+.tree li::after{right:auto;left:50%;border-left:2px solid var(--line)}
+.tree li:only-child::after,.tree li:only-child::before{display:none}
+.tree li:only-child{padding-top:0}
+.tree li:first-child::before,.tree li:last-child::after{border:0 none}
+.tree li:last-child::before{border-right:2px solid var(--line);border-radius:0 6px 0 0}
+.tree li:first-child::after{border-radius:6px 0 0 0}
+.tree ul ul::before{content:"";position:absolute;top:0;left:50%;border-left:2px solid var(--line);width:0;height:26px}
+.tree>ul{padding-top:0}
+.org-node{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:194px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:border-color .12s,box-shadow .12s}
+.org-node:hover,.org-node:focus-visible{border-color:var(--primary)}
+.org-node.me{border-color:var(--primary);background:var(--soft)}
+.org-node.hit{border-color:var(--warn);box-shadow:0 0 0 3px rgba(178,106,0,.18)}
+.org-node .node-role{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:3px}
+.org-node .node-name{font-weight:700;font-size:13.5px}
+.org-node .node-area{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ---------- Modais e toasts ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(12,17,28,.55);display:grid;place-items:center;z-index:100;padding:18px;backdrop-filter:blur(3px)}
+.modal-card{width:min(580px,100%);max-height:90vh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,.35)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.modal-header h3{margin:0;font-size:19px}
+.close-btn{background:none;border:none;font-size:24px;line-height:1;cursor:pointer;color:var(--muted)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+#toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:grid;gap:8px;max-width:330px}
+.toast{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--success);border-radius:10px;padding:11px 14px;font-size:13.5px;box-shadow:var(--shadow)}
+.toast.err{border-left-color:var(--danger)}
+.toast.info{border-left-color:var(--primary)}
+.notif{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.notif:last-child{border-bottom:0}
+.notif.unread{font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--primary);margin-top:6px;flex-shrink:0}
+.bar{height:8px;border-radius:999px;background:var(--card-2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:var(--primary)}
+.list-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.list-row:last-child{border-bottom:0}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN / CADASTRO ============ -->
+<section id="loginScreen" class="login">
+  <div class="login-card">
+    <div class="logo">M<span>i</span>nd</div>
+    <div class="logo-sub">O conhecimento da Orion, organizado por área e por nível.</div>
+
+    <div class="auth-tabs">
+      <button id="tabLoginBtn" class="active" onclick="switchAuthTab('login')">Entrar</button>
+      <button id="tabRegisterBtn" onclick="switchAuthTab('register')">Criar conta</button>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <label for="loginEmail">E-mail corporativo</label>
+      <input type="email" id="loginEmail" required placeholder="nome.sobrenome@orion.com" autocomplete="username">
+
+      <label for="loginPass">Senha</label>
+      <input type="password" id="loginPass" required placeholder="••••••" autocomplete="current-password">
+
+      <button type="submit" class="btn primary block" style="margin-top:20px">Entrar</button>
+
+      <div style="border-top:1px solid var(--line);margin-top:22px;padding-top:16px">
+        <label for="loginUserSelect">Ou entre como um colaborador de demonstração</label>
+        <select id="loginUserSelect"></select>
+        <button type="button" class="btn ghost block" style="margin-top:10px" onclick="loginAsSelected()">Entrar sem senha (demonstração)</button>
+        <p class="helper">A senha de todas as contas de demonstração é <strong>123456</strong>. Troque de usuário para ver como as permissões mudam o que aparece.</p>
+      </div>
+    </form>
+
+    <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+      <label for="regName">Nome completo</label>
+      <input type="text" id="regName" required placeholder="Seu nome">
+
+      <div class="field-row">
+        <div>
+          <label for="regEmail">E-mail corporativo</label>
+          <input type="email" id="regEmail" required placeholder="seu.nome@orion.com">
+        </div>
+        <div>
+          <label for="regPass">Senha de acesso</label>
+          <input type="password" id="regPass" required minlength="4" placeholder="Mínimo de 4 caracteres">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label for="regArea">Área</label>
+          <select id="regArea" required></select>
+        </div>
+        <div>
+          <label for="regCargo">Cargo</label>
+          <select id="regCargo" required>
+            <option value="1">Consultor (nível 1)</option>
+            <option value="2">Gestor (nível 2)</option>
+            <option value="3">Líder (nível 3)</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="regSecurityPass">Senha de liberação do cargo</label>
+      <input type="password" id="regSecurityPass" required placeholder="Senha informada pela liderança">
+      <p class="helper">Cada nível tem uma senha própria, definida pela liderança em Administração. Na base de demonstração todas são <strong>123456</strong>.</p>
+
+      <button type="submit" class="btn primary block" style="margin-top:18px">Criar conta</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="appScreen" class="hidden">
+  <header class="topbar">
+    <button class="icon-btn menu-btn" onclick="toggleSidebar()" aria-label="Abrir menu">☰</button>
+    <div class="logo" style="cursor:pointer" onclick="go('inicio')">M<span>i</span>nd</div>
+
+    <div class="search-wrap">
+      <span class="search-ic">⌕</span>
+      <input id="globalSearch" type="search" placeholder="Buscar conhecimento, pessoas ou competências" oninput="onGlobalSearch(this.value)">
+    </div>
+
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">◐</button>
+      <button class="icon-btn" onclick="go('notificacoes')" title="Notificações">
+        <span>🔔</span><span id="notifBadge" class="badge-dot hidden">0</span>
+      </button>
+      <div class="user-mini" onclick="go('perfil:'+current.id)">
+        <div class="avatar" id="topAvatar"></div>
+        <div class="who">
+          <strong id="topName" style="font-size:13.5px"></strong>
+          <div class="muted" id="topRole"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="backdrop" id="backdrop" onclick="toggleSidebar(false)"></div>
+    <aside class="sidebar" id="sidebar"><div class="nav" id="sidebarNav"></div></aside>
+    <main><div id="content"></div></main>
+  </div>
+</section>
+
+<!-- Modal: publicar / editar conhecimento -->
+<div id="postModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="postModalTitle">Compartilhar conhecimento</h3>
+      <button class="close-btn" onclick="closeModal('postModal')" aria-label="Fechar">&times;</button>
+    </div>
+    <p class="sub" id="postModalHelp">O que você publica aqui fica disponível para quem tem acesso ao feed escolhido.</p>
+    <form onsubmit="savePost(event)">
+      <input type="hidden" id="postEditId">
+      <label for="postTitle">Título</label>
+      <input type="text" id="postTitle" placeholder="Ex.: Como reduzimos o tempo de resposta a propostas" required>
+
+      <div class="field-row">
+        <div>
+          <label for="postFeedTarget">Feed de destino</label>
+          <select id="postFeedTarget" required></select>
+        </div>
+        <div>
+          <label for="postCategory">Categoria</label>
+          <select id="postCategory" required></select>
+        </div>
+      </div>
+
+      <label for="postText">Conteúdo</label>
+      <textarea id="postText" rows="6" placeholder="Descreva o contexto, o que foi feito e o que outras pessoas podem reaproveitar." required></textarea>
+
+      <label for="postTags">Marcadores (separados por vírgula)</label>
+      <input type="text" id="postTags" placeholder="Ex.: proposta comercial, automação, template">
+      <label for="postMentions">Marcar pessoas (IDs separados por vírgula)</label>
+      <input type="text" id="postMentions" placeholder="Ex.: 4, 13">
+      <div class="helper">As pessoas marcadas verão este conteúdo na seção “Posts marcados” do perfil, se tiverem acesso ao feed.</div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" onclick="closeModal('postModal')">Cancelar</button>
+        <button type="submit" class="btn primary" id="postSubmitBtn">Publicar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: editar perfil -->
+<div id="editProfileModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Editar meu perfil</h3>
+      <button class="close-btn" onclick="closeModal('editProfileModal')" aria-label="Fechar">&times;</button>
+    </div>
+    <form onsubmit="saveProfile(event)">
+      <label for="editBio">Apresentação</label>
+      <textarea id="editBio" rows="3" placeholder="Em uma ou duas frases: no que você trabalha e no que pode ajudar."></textarea>
+
+      <label for="editSkills">Competências (separadas por vírgula)</label>
+      <input type="text" id="editSkills" placeholder="Ex.: Gestão de projetos, Python, CRM">
+
+      <div class="field-row">
+        <div>
+          <label for="editPhone">Ramal ou telefone</label>
+          <input type="text" id="editPhone" placeholder="(11) 90000-0000">
+        </div>
+        <div>
+          <label for="editLocal">Unidade</label>
+          <input type="text" id="editLocal" placeholder="São Paulo — Matriz">
+        </div>
+      </div>
+
+      <label for="editNewPass">Nova senha de acesso (deixe em branco para manter)</label>
+      <input type="password" id="editNewPass" placeholder="••••••">
+
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" onclick="closeModal('editProfileModal')">Cancelar</button>
+        <button type="submit" class="btn primary">Salvar alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: editar colaborador (liderança) -->
+<div id="userAdminModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="userAdminTitle">Editar colaborador</h3>
+      <button class="close-btn" onclick="closeModal('userAdminModal')" aria-label="Fechar">&times;</button>
+    </div>
+    <form onsubmit="saveUserAdmin(event)">
+      <input type="hidden" id="adminUserId">
+      <div class="field-row">
+        <div>
+          <label for="adminArea">Área</label>
+          <select id="adminArea"></select>
+        </div>
+        <div>
+          <label for="adminNivel">Cargo</label>
+          <select id="adminNivel">
+            <option value="1">Consultor (nível 1)</option>
+            <option value="2">Gestor (nível 2)</option>
+            <option value="3">Líder (nível 3)</option>
+          </select>
+        </div>
+      </div>
+      <label for="adminGestor">Responde a</label>
+      <select id="adminGestor"></select>
+      <p class="helper">Mudar a área ou o cargo altera na hora o que a pessoa enxerga nos feeds e a posição dela no organograma.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn danger-btn" onclick="removeUserFromAdmin()">Remover da organização</button>
+        <button type="submit" class="btn primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: confirmação -->
+<div id="confirmModal" class="modal-overlay hidden">
+  <div class="modal-card" style="width:min(420px,100%)">
+    <div class="modal-header"><h3 id="confirmTitle">Confirmar</h3></div>
+    <p class="sub" id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('confirmModal')">Cancelar</button>
+      <button class="btn danger-btn" id="confirmOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+"use strict";
+
+/* ===================== Constantes de domínio ===================== */
+const AREAS = ["Executiva","Financeiro","Comercial","Projetos","Operacional","Recursos Humanos","Institucional"];
+const NIVEL_NOME = {1:"Consultor",2:"Gestor",3:"Líder"};
+const NIVEL_LONGO = {1:"Consultor / Analista",2:"Gestor / Gerente",3:"Líder / Diretor"};
+
+const areaCategories = {
+  "Comercial":["Processos de vendas","Pipeline de clientes","Negociação B2B","Prospecção outbound","Estratégia de preços"],
+  "Projetos":["Metodologias ágeis","Gestão de escopo","Qualidade das entregas","Automação de tarefas","Gestão de riscos"],
+  "Operacional":["Otimização de processos","Logística interna","Automação industrial","Padrões operacionais (POP)","Indicadores de SLA"],
+  "Recursos Humanos":["Integração e treinamento","Clima organizacional","Benefícios","Plano de desenvolvimento","Cultura e valores"],
+  "Financeiro":["Planejamento orçamentário","Fluxo de caixa","Compliance e auditoria","Controladoria","Redução de custos"],
+  "Institucional":["Estratégia corporativa","Governança e ESG","Comunicação interna","Relações públicas"],
+  "Executiva":["Visão estratégica","Inovação corporativa","Liderança","Diretrizes de crescimento"],
+  "Geral":["Conhecimento geral","Ferramentas internas","Boas práticas"]
+};
+
+const feedsStructure = (() => {
+  const list = [{id:"geral", title:"Geral da empresa", area:"Geral", nivelRequired:1,
+                 desc:"Aberto a toda a organização."}];
+  const níveis = [[3,"Liderança"],[2,"Gestão"],[1,"Consultoria"]];
+  níveis.forEach(([n,rot]) => list.push({id:`geral-${n}`, title:`${rot} — todas as áreas`, area:"Geral", nivelRequired:n,
+    desc:`Conversa entre ${rot.toLowerCase()} de todas as áreas.`}));
+  AREAS.forEach(a => {
+    const slug = slugify(a);
+    list.push({id:`${slug}-geral`, title:`${a} — todos`, area:a, nivelRequired:1, desc:`Tudo que circula na área de ${a}.`});
+    níveis.forEach(([n,rot]) => list.push({id:`${slug}-${n}`, title:`${a} — ${rot.toLowerCase()}`, area:a, nivelRequired:n,
+      desc:`Restrito a ${rot.toLowerCase()} da área de ${a}.`}));
+  });
+  return list;
+})();
+
+function slugify(s){
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+
+/* ===================== Base de dados inicial ===================== */
+function seedUsers(){
+  // Variante de carga: exatamente 100 colaboradores, incluindo os 20 cadastros originais.
+  const raw = [
+    [1,'Ana Souza','Institucional',3,'Diretora de governança e estrutura.',['Estratégia', 'Governança', 'Liderança']],
+    [2,'Carlos Mendes','Financeiro',3,'CFO, com foco em eficiência e orçamento.',['Controladoria', 'M&A', 'Planejamento']],
+    [3,'Mariana Costa','Comercial',2,'Gerente comercial focada em novos negócios.',['Vendas B2B', 'CRM', 'Negociação']],
+    [4,'Rafael Lima','Comercial',1,'Consultor de vendas enterprise.',['Prospecção', 'Outbound', 'Pitch']],
+    [5,'Lucas Alves','Projetos',2,'Gerente de projetos de inovação.',['Scrum', 'PMBOK', 'Agile']],
+    [6,'Julia Martins','Projetos',1,'Analista de métodos e entregas.',['Kanban', 'Documentação', 'Jira']],
+    [7,'Pedro Rocha','Operacional',3,'Diretor de operações e logística.',['Supply chain', 'Lean', 'SLA']],
+    [8,'Beatriz Silva','Recursos Humanos',2,'Gerente de gente e gestão.',['Clima', 'Gente e gestão', 'Retenção']],
+    [9,'Thiago Ferreira','Executiva',3,'CEO e fundador do grupo.',['Visão holística', 'Inovação', 'Scale-up']],
+    [10,'Camila Ramos','Executiva',2,'Gerente de relações estratégicas.',['Relações institucionais', 'Parcerias']],
+    [11,'Fernando Dias','Financeiro',2,'Gerente de planejamento financeiro.',['FP&A', 'Auditoria', 'Fluxo de caixa']],
+    [12,'Patrícia Souza','Financeiro',1,'Analista de contas e custos.',['Excel', 'Contabilidade', 'Fiscal']],
+    [13,'Gabriel Castro','Comercial',3,'Diretor comercial de expansão.',['Expansão', 'Key accounts', 'Liderança']],
+    [14,'Fernanda Prado','Projetos',3,'Diretora de PMO executivo.',['PMO', 'Transformação digital']],
+    [15,'Marcos Oliveira','Operacional',2,'Gerente de processos industriais.',['BPMN', 'Six Sigma', 'Kaizen']],
+    [16,'Sabrina Duarte','Operacional',1,'Analista de qualidade e processos.',['Controle de qualidade', 'Checklists']],
+    [17,'Luan Barbosa','Recursos Humanos',3,'Diretor de talentos e cultura.',['Cultura organizacional', 'Recrutamento executivo']],
+    [18,'Renata Vianna','Recursos Humanos',1,'Business partner de RH.',['Treinamento', 'Avaliação de desempenho']],
+    [19,'Diego Ribeiro','Institucional',2,'Gerente de comunicação e marca.',['Branding', 'Imprensa', 'Comunicação interna']],
+    [20,'Vanessa Lins','Institucional',1,'Analista de responsabilidade social.',['ESG', 'Comunidades', 'Sustentabilidade']],
+    [21,'Ana Almeida','Executiva',1,'Consultor de executiva, contribuindo para resultados e colaboração entre times.',['Estratégia', 'Governança', 'Liderança']],
+    [22,'Bruno Dias','Financeiro',2,'Gestor de financeiro, responsável por coordenar prioridades e desenvolvimento do time.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [23,'Camila Gomes','Comercial',3,'Líder de comercial, conectando estratégia, cultura e execução.',['Vendas B2B', 'Negociação', 'CRM']],
+    [24,'Diego Jardim','Projetos',1,'Consultor de projetos, contribuindo para resultados e colaboração entre times.',['Agile', 'PMO', 'Gestão de escopo']],
+    [25,'Elisa Mendes','Operacional',2,'Gestor de operacional, responsável por coordenar prioridades e desenvolvimento do time.',['Processos', 'SLA', 'Melhoria contínua']],
+    [26,'Felipe Pereira','Recursos Humanos',3,'Líder de recursos humanos, conectando estratégia, cultura e execução.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [27,'Gabriela Silva','Institucional',1,'Consultor de institucional, contribuindo para resultados e colaboração entre times.',['Comunicação', 'Marca', 'ESG']],
+    [28,'Henrique Barbosa','Executiva',2,'Gestor de executiva, responsável por coordenar prioridades e desenvolvimento do time.',['Estratégia', 'Governança', 'Liderança']],
+    [29,'Isabela Esteves','Financeiro',3,'Líder de financeiro, conectando estratégia, cultura e execução.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [30,'João Henriques','Comercial',1,'Consultor de comercial, contribuindo para resultados e colaboração entre times.',['Vendas B2B', 'Negociação', 'CRM']],
+    [31,'Karen Klein','Projetos',2,'Gestor de projetos, responsável por coordenar prioridades e desenvolvimento do time.',['Agile', 'PMO', 'Gestão de escopo']],
+    [32,'Leonardo Nogueira','Operacional',3,'Líder de operacional, conectando estratégia, cultura e execução.',['Processos', 'SLA', 'Melhoria contínua']],
+    [33,'Mariana Queiroz','Recursos Humanos',1,'Consultor de recursos humanos, contribuindo para resultados e colaboração entre times.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [34,'Nicolas Teixeira','Institucional',2,'Gestor de institucional, responsável por coordenar prioridades e desenvolvimento do time.',['Comunicação', 'Marca', 'ESG']],
+    [35,'Olívia Cardoso','Executiva',3,'Líder de executiva, conectando estratégia, cultura e execução.',['Estratégia', 'Governança', 'Liderança']],
+    [36,'Paulo Ferreira','Financeiro',1,'Consultor de financeiro, contribuindo para resultados e colaboração entre times.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [37,'Queila Ibrahim','Comercial',2,'Gestor de comercial, responsável por coordenar prioridades e desenvolvimento do time.',['Vendas B2B', 'Negociação', 'CRM']],
+    [38,'Rafael Lopes','Projetos',3,'Líder de projetos, conectando estratégia, cultura e execução.',['Agile', 'PMO', 'Gestão de escopo']],
+    [39,'Sofia Oliveira','Operacional',1,'Consultor de operacional, contribuindo para resultados e colaboração entre times.',['Processos', 'SLA', 'Melhoria contínua']],
+    [40,'Thiago Ramos','Recursos Humanos',2,'Gestor de recursos humanos, responsável por coordenar prioridades e desenvolvimento do time.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [41,'Ursula Almeida','Institucional',3,'Líder de institucional, conectando estratégia, cultura e execução.',['Comunicação', 'Marca', 'ESG']],
+    [42,'Victor Dias','Executiva',1,'Consultor de executiva, contribuindo para resultados e colaboração entre times.',['Estratégia', 'Governança', 'Liderança']],
+    [43,'Wesley Gomes','Financeiro',2,'Gestor de financeiro, responsável por coordenar prioridades e desenvolvimento do time.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [44,'Yasmin Jardim','Comercial',3,'Líder de comercial, conectando estratégia, cultura e execução.',['Vendas B2B', 'Negociação', 'CRM']],
+    [45,'Aline Mendes','Projetos',1,'Consultor de projetos, contribuindo para resultados e colaboração entre times.',['Agile', 'PMO', 'Gestão de escopo']],
+    [46,'Breno Pereira','Operacional',2,'Gestor de operacional, responsável por coordenar prioridades e desenvolvimento do time.',['Processos', 'SLA', 'Melhoria contínua']],
+    [47,'Clara Silva','Recursos Humanos',3,'Líder de recursos humanos, conectando estratégia, cultura e execução.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [48,'Daniel Barbosa','Institucional',1,'Consultor de institucional, contribuindo para resultados e colaboração entre times.',['Comunicação', 'Marca', 'ESG']],
+    [49,'Eduarda Esteves','Executiva',2,'Gestor de executiva, responsável por coordenar prioridades e desenvolvimento do time.',['Estratégia', 'Governança', 'Liderança']],
+    [50,'Fábio Henriques','Financeiro',3,'Líder de financeiro, conectando estratégia, cultura e execução.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [51,'Giovana Klein','Comercial',1,'Consultor de comercial, contribuindo para resultados e colaboração entre times.',['Vendas B2B', 'Negociação', 'CRM']],
+    [52,'Heitor Nogueira','Projetos',2,'Gestor de projetos, responsável por coordenar prioridades e desenvolvimento do time.',['Agile', 'PMO', 'Gestão de escopo']],
+    [53,'Ingrid Queiroz','Operacional',3,'Líder de operacional, conectando estratégia, cultura e execução.',['Processos', 'SLA', 'Melhoria contínua']],
+    [54,'Júlio Teixeira','Recursos Humanos',1,'Consultor de recursos humanos, contribuindo para resultados e colaboração entre times.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [55,'Larissa Cardoso','Institucional',2,'Gestor de institucional, responsável por coordenar prioridades e desenvolvimento do time.',['Comunicação', 'Marca', 'ESG']],
+    [56,'Miguel Ferreira','Executiva',3,'Líder de executiva, conectando estratégia, cultura e execução.',['Estratégia', 'Governança', 'Liderança']],
+    [57,'Natália Ibrahim','Financeiro',1,'Consultor de financeiro, contribuindo para resultados e colaboração entre times.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [58,'Otávio Lopes','Comercial',2,'Gestor de comercial, responsável por coordenar prioridades e desenvolvimento do time.',['Vendas B2B', 'Negociação', 'CRM']],
+    [59,'Priscila Oliveira','Projetos',3,'Líder de projetos, conectando estratégia, cultura e execução.',['Agile', 'PMO', 'Gestão de escopo']],
+    [60,'Renato Ramos','Operacional',1,'Consultor de operacional, contribuindo para resultados e colaboração entre times.',['Processos', 'SLA', 'Melhoria contínua']],
+    [61,'Ana Almeida','Recursos Humanos',2,'Gestor de recursos humanos, responsável por coordenar prioridades e desenvolvimento do time.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [62,'Bruno Dias','Institucional',3,'Líder de institucional, conectando estratégia, cultura e execução.',['Comunicação', 'Marca', 'ESG']],
+    [63,'Camila Gomes','Executiva',1,'Consultor de executiva, contribuindo para resultados e colaboração entre times.',['Estratégia', 'Governança', 'Liderança']],
+    [64,'Diego Jardim','Financeiro',2,'Gestor de financeiro, responsável por coordenar prioridades e desenvolvimento do time.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [65,'Elisa Mendes','Comercial',3,'Líder de comercial, conectando estratégia, cultura e execução.',['Vendas B2B', 'Negociação', 'CRM']],
+    [66,'Felipe Pereira','Projetos',1,'Consultor de projetos, contribuindo para resultados e colaboração entre times.',['Agile', 'PMO', 'Gestão de escopo']],
+    [67,'Gabriela Silva','Operacional',2,'Gestor de operacional, responsável por coordenar prioridades e desenvolvimento do time.',['Processos', 'SLA', 'Melhoria contínua']],
+    [68,'Henrique Barbosa','Recursos Humanos',3,'Líder de recursos humanos, conectando estratégia, cultura e execução.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [69,'Isabela Esteves','Institucional',1,'Consultor de institucional, contribuindo para resultados e colaboração entre times.',['Comunicação', 'Marca', 'ESG']],
+    [70,'João Henriques','Executiva',2,'Gestor de executiva, responsável por coordenar prioridades e desenvolvimento do time.',['Estratégia', 'Governança', 'Liderança']],
+    [71,'Karen Klein','Financeiro',3,'Líder de financeiro, conectando estratégia, cultura e execução.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [72,'Leonardo Nogueira','Comercial',1,'Consultor de comercial, contribuindo para resultados e colaboração entre times.',['Vendas B2B', 'Negociação', 'CRM']],
+    [73,'Mariana Queiroz','Projetos',2,'Gestor de projetos, responsável por coordenar prioridades e desenvolvimento do time.',['Agile', 'PMO', 'Gestão de escopo']],
+    [74,'Nicolas Teixeira','Operacional',3,'Líder de operacional, conectando estratégia, cultura e execução.',['Processos', 'SLA', 'Melhoria contínua']],
+    [75,'Olívia Cardoso','Recursos Humanos',1,'Consultor de recursos humanos, contribuindo para resultados e colaboração entre times.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [76,'Paulo Ferreira','Institucional',2,'Gestor de institucional, responsável por coordenar prioridades e desenvolvimento do time.',['Comunicação', 'Marca', 'ESG']],
+    [77,'Queila Ibrahim','Executiva',3,'Líder de executiva, conectando estratégia, cultura e execução.',['Estratégia', 'Governança', 'Liderança']],
+    [78,'Rafael Lopes','Financeiro',1,'Consultor de financeiro, contribuindo para resultados e colaboração entre times.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [79,'Sofia Oliveira','Comercial',2,'Gestor de comercial, responsável por coordenar prioridades e desenvolvimento do time.',['Vendas B2B', 'Negociação', 'CRM']],
+    [80,'Thiago Ramos','Projetos',3,'Líder de projetos, conectando estratégia, cultura e execução.',['Agile', 'PMO', 'Gestão de escopo']],
+    [81,'Ursula Almeida','Operacional',1,'Consultor de operacional, contribuindo para resultados e colaboração entre times.',['Processos', 'SLA', 'Melhoria contínua']],
+    [82,'Victor Dias','Recursos Humanos',2,'Gestor de recursos humanos, responsável por coordenar prioridades e desenvolvimento do time.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [83,'Wesley Gomes','Institucional',3,'Líder de institucional, conectando estratégia, cultura e execução.',['Comunicação', 'Marca', 'ESG']],
+    [84,'Yasmin Jardim','Executiva',1,'Consultor de executiva, contribuindo para resultados e colaboração entre times.',['Estratégia', 'Governança', 'Liderança']],
+    [85,'Aline Mendes','Financeiro',2,'Gestor de financeiro, responsável por coordenar prioridades e desenvolvimento do time.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [86,'Breno Pereira','Comercial',3,'Líder de comercial, conectando estratégia, cultura e execução.',['Vendas B2B', 'Negociação', 'CRM']],
+    [87,'Clara Silva','Projetos',1,'Consultor de projetos, contribuindo para resultados e colaboração entre times.',['Agile', 'PMO', 'Gestão de escopo']],
+    [88,'Daniel Barbosa','Operacional',2,'Gestor de operacional, responsável por coordenar prioridades e desenvolvimento do time.',['Processos', 'SLA', 'Melhoria contínua']],
+    [89,'Eduarda Esteves','Recursos Humanos',3,'Líder de recursos humanos, conectando estratégia, cultura e execução.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [90,'Fábio Henriques','Institucional',1,'Consultor de institucional, contribuindo para resultados e colaboração entre times.',['Comunicação', 'Marca', 'ESG']],
+    [91,'Giovana Klein','Executiva',2,'Gestor de executiva, responsável por coordenar prioridades e desenvolvimento do time.',['Estratégia', 'Governança', 'Liderança']],
+    [92,'Heitor Nogueira','Financeiro',3,'Líder de financeiro, conectando estratégia, cultura e execução.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [93,'Ingrid Queiroz','Comercial',1,'Consultor de comercial, contribuindo para resultados e colaboração entre times.',['Vendas B2B', 'Negociação', 'CRM']],
+    [94,'Júlio Teixeira','Projetos',2,'Gestor de projetos, responsável por coordenar prioridades e desenvolvimento do time.',['Agile', 'PMO', 'Gestão de escopo']],
+    [95,'Larissa Cardoso','Operacional',3,'Líder de operacional, conectando estratégia, cultura e execução.',['Processos', 'SLA', 'Melhoria contínua']],
+    [96,'Miguel Ferreira','Recursos Humanos',1,'Consultor de recursos humanos, contribuindo para resultados e colaboração entre times.',['People analytics', 'Cultura', 'Desenvolvimento']],
+    [97,'Natália Ibrahim','Institucional',2,'Gestor de institucional, responsável por coordenar prioridades e desenvolvimento do time.',['Comunicação', 'Marca', 'ESG']],
+    [98,'Otávio Lopes','Executiva',3,'Líder de executiva, conectando estratégia, cultura e execução.',['Estratégia', 'Governança', 'Liderança']],
+    [99,'Priscila Oliveira','Financeiro',1,'Consultor de financeiro, contribuindo para resultados e colaboração entre times.',['Planejamento', 'Controladoria', 'Análise financeira']],
+    [100,'Renato Ramos','Comercial',2,'Gestor de comercial, responsável por coordenar prioridades e desenvolvimento do time.',['Vendas B2B', 'Negociação', 'CRM']]
+  ];
+  return raw.map(([id,nome,area,nivel,bio,skills]) => ({
+    id, nome, area, nivel, bio, skills,
+    email: slugify(nome).replace(/-/g, ".") + "@orion.com",
+    senha: "123456",
+    cargo: NIVEL_NOME[nivel],
+    telefone: "", local: "São Paulo — Matriz",
+    desde: "2024-02-01",
+    gestorId: null
+  }));
+}
+
+function seedPosts(){
+  const base = [
+    [101,9,"executiva-3","Diretrizes para o próximo trimestre","Consolidei três prioridades: inovação tecnológica, disciplina de custos e cultura. Pedi a cada diretoria um plano de execução com metas mensais até o dia 30.",["Visão estratégica"],["planejamento","metas"]],
+    [102,13,"comercial-3","Meta de expansão nacional","Defini as regiões prioritárias para o próximo ciclo: Sul, Centro-Oeste e interior de SP. Publiquei na pasta compartilhada o relatório de mercado com o potencial estimado por praça.",["Estratégia de preços"],["expansão","mercado"]],
+    [103,4,"comercial-1","Roteiro de abordagem para contas enterprise","Montei um roteiro de primeira conversa em três blocos: contexto do cliente, diagnóstico e prova social. Com ele, aumentei minha taxa de resposta de 12% para 20% em oito semanas.",["Prospecção outbound"],["script","outbound"]],
+    [104,3,"comercial-2","Revisão do pipeline no CRM","Atualizei o estágio dos leads e deixei três campos obrigatórios: valor estimado, data prevista e motivo de perda. Assim, consegui fechar a previsão com a controladoria.",["Pipeline de clientes"],["crm","rotina"]],
+    [105,5,"projetos-2","Padronização das sprints de inovação","Criei um modelo de história de usuário no Jira com critérios de aceite obrigatórios. O modelo cortou meu retrabalho de refinamento pela metade.",["Metodologias ágeis"],["jira","sprint"]],
+    [106,6,"projetos-1","Lição aprendida: projeto Orion","Centralizei a documentação em um único repositório, evitei retrabalho e reduzi as dúvidas recorrentes do time. Registrei o índice de pastas no anexo do projeto.",["Qualidade das entregas"],["documentação","lição aprendida"]],
+    [107,14,"projetos-3","Framework corporativo de projetos","Publiquei as diretrizes de governança para projetos estratégicos: comitê quinzenal, matriz de riscos e um único responsável por entrega.",["Gestão de riscos"],["governança","pmo"]],
+    [108,7,"operacional-3","Automação da cadeia de suprimentos","Concluí o mapeamento logístico ponta a ponta. Deixei quatro etapas prontas para automação, com retorno estimado em sete meses.",["Automação industrial"],["logística","automação"]],
+    [109,15,"operacional-2","Novo manual de POP operacional","Atualizei o procedimento padrão dos times de campo, incluí fotos de cada etapa crítica e criei um checklist de saída.",["Padrões operacionais (POP)"],["pop","campo"]],
+    [110,16,"operacional-1","Melhoria na triagem de materiais","Implantei uma nova rotulagem por cor no estoque e reduzi o tempo de despacho em cerca de 15 minutos por pedido.",["Otimização de processos"],["estoque","melhoria"]],
+    [111,8,"recursos-humanos-2","Pesquisa de clima 2026","Alcancei 87% de adesão na primeira semana. Os temas mais citados foram carga de trabalho e clareza de carreira, e preparei o plano de ação para o próximo comitê.",["Clima organizacional"],["clima","pesquisa"]],
+    [112,17,"recursos-humanos-3","Programa de liderança inclusiva","Lancei a trilha de desenvolvimento contínuo para líderes, com mentoria cruzada entre áreas e encontros mensais.",["Cultura e valores"],["liderança","trilha"]],
+    [113,18,"recursos-humanos-1","Guia rápido de integração","Montei um checklist de boas-vindas para os 30 primeiros dias, com acessos, apresentação de área, padrinho e primeira entrega combinada.",["Integração e treinamento"],["onboarding","checklist"]],
+    [114,2,"financeiro-3","Diretrizes do orçamento anual","Reforcei os limites de contingência por departamento e organizei o fluxo de aprovação acima de R$ 50 mil.",["Planejamento orçamentário"],["orçamento","aprovação"]],
+    [115,11,"financeiro-2","Relatório mensal de fluxo de caixa","Publiquei o demonstrativo consolidado e destaquei a melhora de seis dias no prazo médio de recebimento.",["Fluxo de caixa"],["relatório","caixa"]],
+    [116,12,"financeiro-1","Checklist de fechamento fiscal","Organizei o passo a passo do envio de notas no fim do mês, com os prazos de cada imposto e os responsáveis.",["Compliance e auditoria"],["fiscal","checklist"]],
+    [117,1,"geral","Como usar a Mind no dia a dia","Eu publico o que aprendo resolvendo problemas reais. Um registro curto e específico vale mais do que um documento longo que ninguém abre.",["Comunicação interna"],["boas-vindas","como usar"]],
+    [118,10,"executiva-2","Parcerias em avaliação","Estou avaliando três parcerias: integração de dados, distribuição regional e coinovação. Vou levar o comparativo ao comitê da próxima semana.",["Inovação corporativa"],["parcerias"]],
+    [119,19,"institucional-2","Novo guia de marca","Atualizei aplicação de logo, paleta e tom de voz. O guia agora vale para propostas comerciais e materiais de recrutamento.",["Comunicação interna"],["marca","guia"]],
+    [120,20,"institucional-1","Resultados do programa social","Registrei mil horas de voluntariado no semestre, concentradas em quatro projetos de educação nas comunidades próximas às unidades.",["Governança e ESG"],["esg","voluntariado"]],
+    [121,1,"geral-3","Alinhamento entre diretorias","Propus uma pauta única mensal para evitar decisões duplicadas entre diretorias.",["Estratégia corporativa"],["comitê"]],
+    [122,3,"geral-2","Modelo de reunião semanal de 30 minutos","Adotei uma pauta fixa com números, travas e decisões. Ela funciona bem para equipes de até dez pessoas.",["Pipeline de clientes"],["reunião","produtividade"]],
+    [123,6,"geral-1","Atalhos que economizam tempo","Reuni os atalhos e automações que mais uso em planilhas e no Jira, com exemplos prontos para copiar.",["Automação de tarefas"],["produtividade"]]
+  ];
+  const historias = [
+    [1001,1,'institucional-3','Alinhei a comunicação de XPTO Logística com todas as áreas','Criei o plano de comunicação de XPTO Logística, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Carlos Mendes participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Estratégia'],['institucional', 'xpto-logistica', 'estrategia'],[2]],
+    [1002,2,'financeiro-3','Aprovei o business case de Nexa Saúde com economia de R$ 97 mil','Consolidei custos, premissas e cenários do trabalho de Nexa Saúde. Apresentei ao comitê a alternativa com economia anual estimada de R$ 97 mil, condicionada a três indicadores mensais. @Mariana Costa revisou comigo a governança e o plano de desembolso.',['Controladoria'],['financeiro', 'nexa-saude', 'controladoria'],[3]],
+    [1003,3,'comercial-2','Meu diagnóstico de Aurora Foods virou proposta de R$ 114 mil','Depois da reunião inicial, conduzi o diagnóstico com Carolina Reis e mapeei tempo alto de resposta. Estruturei uma proposta de R$ 114 mil, com implantação em 4 meses e dois marcos de sucesso. @Rafael Lima participou comigo da revisão de margem e dos critérios de aceite.',['Negociação B2B'],['comercial', 'aurora-foods', 'negociacao-b2b'],[4]],
+    [1004,4,'comercial-1','Reunião com VerdeBank marcada após abordagem multicanal','Na prospecção de 04/04/2026, combinei pesquisa de contexto no LinkedIn, indicação interna e um e-mail com três hipóteses de ganho operacional. Com essa abordagem, marquei uma conversa de 45 minutos com André Martins, responsável por operações da VerdeBank. @Lucas Alves me ajudou a revisar o roteiro antes do envio.',['Prospecção outbound'],['comercial', 'verdebank', 'prospeccao-outbound'],[5]],
+    [1005,5,'projetos-2','Conduzi o kick-off do projeto Atlas Energia','Assumi o projeto de Atlas Energia depois do contrato comercial. No kick-off de 05/05/2026, alinhei backlog, matriz de riscos e responsáveis com @Julia Martins. Defini a primeira entrega para 14/06/2026, com critério de aceite validado pelo cliente.',['Scrum'],['projetos', 'atlas-energia', 'scrum'],[6]],
+    [1006,6,'projetos-1','Conduzi o kick-off do projeto MobiNow','Assumi o projeto de MobiNow depois do contrato comercial. No kick-off de 06/06/2026, alinhei backlog, matriz de riscos e responsáveis com @Pedro Rocha. Defini a primeira entrega para 15/07/2026, com critério de aceite validado pelo cliente.',['Kanban'],['projetos', 'mobinow', 'kanban'],[7]],
+    [1007,7,'operacional-3','Reduzi o SLA de Casa Norte em 18% no primeiro ciclo','Analisei os gargalos da operação de Casa Norte, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 20 dias, reduzi o SLA de 54 para 24 horas. @Beatriz Silva acompanhou comigo a medição na rotina de melhoria contínua.',['Supply chain'],['operacional', 'casa-norte', 'supply-chain'],[8]],
+    [1008,8,'recursos-humanos-2','Levei o onboarding de Órbita Educação a 19% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Órbita Educação, com padrinho, checklist de acessos e conversa de contexto. Em 21 dias, chegamos a 19% de adesão. @Thiago Ferreira me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['Clima'],['recursos-humanos', 'orbita-educacao', 'clima'],[9]],
+    [1009,9,'executiva-3','Levei ao comitê a expansão da parceria com Ponto Certo','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Ponto Certo. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 09/01/2026. @Camila Ramos apresentou comigo os indicadores que sustentaram a recomendação.',['Visão holística'],['executiva', 'ponto-certo', 'visao-holistica'],[10]],
+    [1010,10,'executiva-2','Levei ao comitê a expansão da parceria com Lume Farma','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Lume Farma. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 10/02/2026. @Fernando Dias apresentou comigo os indicadores que sustentaram a recomendação.',['Relações institucionais'],['executiva', 'lume-farma', 'relacoes-institucionais'],[11]],
+    [1011,11,'financeiro-2','Aprovei o business case de XPTO Logística com economia de R$ 250 mil','Consolidei custos, premissas e cenários do trabalho de XPTO Logística. Apresentei ao comitê a alternativa com economia anual estimada de R$ 250 mil, condicionada a três indicadores mensais. @Patrícia Souza revisou comigo a governança e o plano de desembolso.',['FP&A'],['financeiro', 'xpto-logistica', 'fp-a'],[12]],
+    [1012,12,'financeiro-1','Aprovei o business case de Nexa Saúde com economia de R$ 267 mil','Consolidei custos, premissas e cenários do trabalho de Nexa Saúde. Apresentei ao comitê a alternativa com economia anual estimada de R$ 267 mil, condicionada a três indicadores mensais. @Gabriel Castro revisou comigo a governança e o plano de desembolso.',['Excel'],['financeiro', 'nexa-saude', 'excel'],[13]],
+    [1013,13,'comercial-3','Fechei contrato de R$ 284 mil com Aurora Foods','Na reunião de fechamento de 13/05/2026, apresentei o business case que construí a partir dos dados de Aurora Foods. Fechamos um contrato de R$ 284 mil, com início em 13/06/2026 e patrocínio executivo de Marina Lopes. Reconheço @Fernanda Prado pela cadência que originou esta oportunidade.',['Estratégia de preços'],['comercial', 'aurora-foods', 'estrategia-de-precos'],[14]],
+    [1014,14,'projetos-3','Conduzi o kick-off do projeto VerdeBank','Assumi o projeto de VerdeBank depois do contrato comercial. No kick-off de 14/06/2026, alinhei backlog, matriz de riscos e responsáveis com @Marcos Oliveira. Defini a primeira entrega para 23/07/2026, com critério de aceite validado pelo cliente.',['PMO'],['projetos', 'verdebank', 'pmo'],[15]],
+    [1015,15,'operacional-2','Reduzi o SLA de Atlas Energia em 26% no primeiro ciclo','Analisei os gargalos da operação de Atlas Energia, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 28 dias, reduzi o SLA de 62 para 20 horas. @Sabrina Duarte acompanhou comigo a medição na rotina de melhoria contínua.',['BPMN'],['operacional', 'atlas-energia', 'bpmn'],[16]],
+    [1016,16,'operacional-1','Reduzi o SLA de MobiNow em 27% no primeiro ciclo','Analisei os gargalos da operação de MobiNow, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 29 dias, reduzi o SLA de 63 para 21 horas. @Luan Barbosa acompanhou comigo a medição na rotina de melhoria contínua.',['Controle de qualidade'],['operacional', 'mobinow', 'controle-de-qualidade'],[17]],
+    [1017,17,'recursos-humanos-3','Levei o onboarding de Casa Norte a 28% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Casa Norte, com padrinho, checklist de acessos e conversa de contexto. Em 30 dias, chegamos a 28% de adesão. @Renata Vianna me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['Cultura organizacional'],['recursos-humanos', 'casa-norte', 'cultura-organizacional'],[18]],
+    [1018,18,'recursos-humanos-1','Levei o onboarding de Órbita Educação a 29% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Órbita Educação, com padrinho, checklist de acessos e conversa de contexto. Em 31 dias, chegamos a 29% de adesão. @Diego Ribeiro me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['Treinamento'],['recursos-humanos', 'orbita-educacao', 'treinamento'],[19]],
+    [1019,19,'institucional-2','Alinhei a comunicação de Ponto Certo com todas as áreas','Criei o plano de comunicação de Ponto Certo, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Vanessa Lins participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Branding'],['institucional', 'ponto-certo', 'branding'],[20]],
+    [1020,20,'institucional-1','Alinhei a comunicação de Lume Farma com todas as áreas','Criei o plano de comunicação de Lume Farma, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Ana Almeida participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['ESG'],['institucional', 'lume-farma', 'esg'],[21]],
+    [1021,21,'executiva-1','Levei ao comitê a expansão da parceria com XPTO Logística','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com XPTO Logística. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 21/05/2026. @Bruno Dias apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'xpto-logistica', 'estrategia'],[22]],
+    [1022,22,'financeiro-2','Aprovei o business case de Nexa Saúde com economia de R$ 437 mil','Consolidei custos, premissas e cenários do trabalho de Nexa Saúde. Apresentei ao comitê a alternativa com economia anual estimada de R$ 437 mil, condicionada a três indicadores mensais. @Camila Gomes revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'nexa-saude', 'planejamento'],[23]],
+    [1023,23,'comercial-3','Fechei contrato de R$ 454 mil com Aurora Foods','Na reunião de fechamento de 23/07/2026, apresentei o business case que construí a partir dos dados de Aurora Foods. Fechamos um contrato de R$ 454 mil, com início em 03/08/2026 e patrocínio executivo de Carolina Reis. Reconheço @Diego Jardim pela cadência que originou esta oportunidade.',['Estratégia de preços'],['comercial', 'aurora-foods', 'estrategia-de-precos'],[24]],
+    [1024,24,'projetos-1','Conduzi o kick-off do projeto VerdeBank','Assumi o projeto de VerdeBank depois do contrato comercial. No kick-off de 24/08/2026, alinhei backlog, matriz de riscos e responsáveis com @Elisa Mendes. Defini a primeira entrega para 13/09/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'verdebank', 'agile'],[25]],
+    [1025,25,'operacional-2','Reduzi o SLA de Atlas Energia em 36% no primeiro ciclo','Analisei os gargalos da operação de Atlas Energia, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 20 dias, reduzi o SLA de 52 para 18 horas. @Felipe Pereira acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'atlas-energia', 'processos'],[26]],
+    [1026,26,'recursos-humanos-3','Levei o onboarding de MobiNow a 37% de adesão','Estruturei a trilha de integração das pessoas envolvidas em MobiNow, com padrinho, checklist de acessos e conversa de contexto. Em 21 dias, chegamos a 37% de adesão. @Gabriela Silva me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'mobinow', 'people-analytics'],[27]],
+    [1027,27,'institucional-1','Alinhei a comunicação de Casa Norte com todas as áreas','Criei o plano de comunicação de Casa Norte, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Henrique Barbosa participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'casa-norte', 'comunicacao'],[28]],
+    [1028,28,'executiva-2','Levei ao comitê a expansão da parceria com Órbita Educação','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Órbita Educação. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 04/04/2026. @Isabela Esteves apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'orbita-educacao', 'estrategia'],[29]],
+    [1029,29,'financeiro-3','Aprovei o business case de Ponto Certo com economia de R$ 136 mil','Consolidei custos, premissas e cenários do trabalho de Ponto Certo. Apresentei ao comitê a alternativa com economia anual estimada de R$ 136 mil, condicionada a três indicadores mensais. @João Henriques revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'ponto-certo', 'planejamento'],[30]],
+    [1030,30,'comercial-1','Reunião com Lume Farma marcada após abordagem multicanal','Na prospecção de 06/06/2026, combinei pesquisa de contexto no LinkedIn, indicação interna e um e-mail com três hipóteses de ganho operacional. Com essa abordagem, marquei uma conversa de 45 minutos com Eduardo Paes, responsável por operações da Lume Farma. @Karen Klein me ajudou a revisar o roteiro antes do envio.',['Prospecção outbound'],['comercial', 'lume-farma', 'prospeccao-outbound'],[31]],
+    [1031,31,'projetos-2','Conduzi o kick-off do projeto XPTO Logística','Assumi o projeto de XPTO Logística depois do contrato comercial. No kick-off de 07/07/2026, alinhei backlog, matriz de riscos e responsáveis com @Leonardo Nogueira. Defini a primeira entrega para 20/08/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'xpto-logistica', 'agile'],[32]],
+    [1032,32,'operacional-3','Reduzi o SLA de Nexa Saúde em 16% no primeiro ciclo','Analisei os gargalos da operação de Nexa Saúde, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 27 dias, reduzi o SLA de 59 para 25 horas. @Mariana Queiroz acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'nexa-saude', 'processos'],[33]],
+    [1033,33,'recursos-humanos-1','Levei o onboarding de Aurora Foods a 17% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Aurora Foods, com padrinho, checklist de acessos e conversa de contexto. Em 28 dias, chegamos a 17% de adesão. @Nicolas Teixeira me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'aurora-foods', 'people-analytics'],[34]],
+    [1034,34,'institucional-2','Alinhei a comunicação de VerdeBank com todas as áreas','Criei o plano de comunicação de VerdeBank, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Olívia Cardoso participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'verdebank', 'comunicacao'],[35]],
+    [1035,35,'executiva-3','Levei ao comitê a expansão da parceria com Atlas Energia','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Atlas Energia. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 11/03/2026. @Paulo Ferreira apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'atlas-energia', 'estrategia'],[36]],
+    [1036,36,'financeiro-1','Aprovei o business case de MobiNow com economia de R$ 255 mil','Consolidei custos, premissas e cenários do trabalho de MobiNow. Apresentei ao comitê a alternativa com economia anual estimada de R$ 255 mil, condicionada a três indicadores mensais. @Queila Ibrahim revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'mobinow', 'planejamento'],[37]],
+    [1037,37,'comercial-2','Meu diagnóstico de Casa Norte virou proposta de R$ 272 mil','Depois da reunião inicial, conduzi o diagnóstico com Marina Lopes e mapeei atraso na conciliação. Estruturei uma proposta de R$ 272 mil, com implantação em 3 meses e dois marcos de sucesso. @Rafael Lopes participou comigo da revisão de margem e dos critérios de aceite.',['Negociação B2B'],['comercial', 'casa-norte', 'negociacao-b2b'],[38]],
+    [1038,38,'projetos-3','Conduzi o kick-off do projeto Órbita Educação','Assumi o projeto de Órbita Educação depois do contrato comercial. No kick-off de 14/06/2026, alinhei backlog, matriz de riscos e responsáveis com @Sofia Oliveira. Defini a primeira entrega para 27/07/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'orbita-educacao', 'agile'],[39]],
+    [1039,39,'operacional-1','Reduzi o SLA de Ponto Certo em 23% no primeiro ciclo','Analisei os gargalos da operação de Ponto Certo, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 16 dias, reduzi o SLA de 66 para 20 horas. @Thiago Ramos acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'ponto-certo', 'processos'],[40]],
+    [1040,40,'recursos-humanos-2','Levei o onboarding de Lume Farma a 24% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Lume Farma, com padrinho, checklist de acessos e conversa de contexto. Em 17 dias, chegamos a 24% de adesão. @Ursula Almeida me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'lume-farma', 'people-analytics'],[41]],
+    [1041,41,'institucional-3','Alinhei a comunicação de XPTO Logística com todas as áreas','Criei o plano de comunicação de XPTO Logística, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Victor Dias participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'xpto-logistica', 'comunicacao'],[42]],
+    [1042,42,'executiva-1','Levei ao comitê a expansão da parceria com Nexa Saúde','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Nexa Saúde. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 18/02/2026. @Wesley Gomes apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'nexa-saude', 'estrategia'],[43]],
+    [1043,43,'financeiro-2','Aprovei o business case de Aurora Foods com economia de R$ 374 mil','Consolidei custos, premissas e cenários do trabalho de Aurora Foods. Apresentei ao comitê a alternativa com economia anual estimada de R$ 374 mil, condicionada a três indicadores mensais. @Yasmin Jardim revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'aurora-foods', 'planejamento'],[44]],
+    [1044,44,'comercial-3','Fechei contrato de R$ 391 mil com VerdeBank','Na reunião de fechamento de 20/04/2026, apresentei o business case que construí a partir dos dados de VerdeBank. Fechamos um contrato de R$ 391 mil, com início em 04/05/2026 e patrocínio executivo de André Martins. Reconheço @Aline Mendes pela cadência que originou esta oportunidade.',['Estratégia de preços'],['comercial', 'verdebank', 'estrategia-de-precos'],[45]],
+    [1045,45,'projetos-1','Conduzi o kick-off do projeto Atlas Energia','Assumi o projeto de Atlas Energia depois do contrato comercial. No kick-off de 21/05/2026, alinhei backlog, matriz de riscos e responsáveis com @Breno Pereira. Defini a primeira entrega para 14/06/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'atlas-energia', 'agile'],[46]],
+    [1046,46,'operacional-2','Reduzi o SLA de MobiNow em 30% no primeiro ciclo','Analisei os gargalos da operação de MobiNow, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 23 dias, reduzi o SLA de 53 para 27 horas. @Clara Silva acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'mobinow', 'processos'],[47]],
+    [1047,47,'recursos-humanos-3','Levei o onboarding de Casa Norte a 31% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Casa Norte, com padrinho, checklist de acessos e conversa de contexto. Em 24 dias, chegamos a 31% de adesão. @Daniel Barbosa me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'casa-norte', 'people-analytics'],[48]],
+    [1048,48,'institucional-1','Alinhei a comunicação de Órbita Educação com todas as áreas','Criei o plano de comunicação de Órbita Educação, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Eduarda Esteves participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'orbita-educacao', 'comunicacao'],[49]],
+    [1049,49,'executiva-2','Levei ao comitê a expansão da parceria com Ponto Certo','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Ponto Certo. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 01/01/2026. @Fábio Henriques apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'ponto-certo', 'estrategia'],[50]],
+    [1050,50,'financeiro-3','Aprovei o business case de Lume Farma com economia de R$ 493 mil','Consolidei custos, premissas e cenários do trabalho de Lume Farma. Apresentei ao comitê a alternativa com economia anual estimada de R$ 493 mil, condicionada a três indicadores mensais. @Giovana Klein revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'lume-farma', 'planejamento'],[51]],
+    [1051,51,'comercial-1','Reunião com XPTO Logística marcada após abordagem multicanal','Na prospecção de 03/03/2026, combinei pesquisa de contexto no LinkedIn, indicação interna e um e-mail com três hipóteses de ganho operacional. Com essa abordagem, marquei uma conversa de 45 minutos com Carolina Reis, responsável por operações da XPTO Logística. @Heitor Nogueira me ajudou a revisar o roteiro antes do envio.',['Prospecção outbound'],['comercial', 'xpto-logistica', 'prospeccao-outbound'],[52]],
+    [1052,52,'projetos-2','Conduzi o kick-off do projeto Nexa Saúde','Assumi o projeto de Nexa Saúde depois do contrato comercial. No kick-off de 04/04/2026, alinhei backlog, matriz de riscos e responsáveis com @Ingrid Queiroz. Defini a primeira entrega para 21/05/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'nexa-saude', 'agile'],[53]],
+    [1053,53,'operacional-3','Reduzi o SLA de Aurora Foods em 37% no primeiro ciclo','Analisei os gargalos da operação de Aurora Foods, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 30 dias, reduzi o SLA de 60 para 22 horas. @Júlio Teixeira acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'aurora-foods', 'processos'],[54]],
+    [1054,54,'recursos-humanos-1','Levei o onboarding de VerdeBank a 38% de adesão','Estruturei a trilha de integração das pessoas envolvidas em VerdeBank, com padrinho, checklist de acessos e conversa de contexto. Em 31 dias, chegamos a 38% de adesão. @Larissa Cardoso me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'verdebank', 'people-analytics'],[55]],
+    [1055,55,'institucional-2','Alinhei a comunicação de Atlas Energia com todas as áreas','Criei o plano de comunicação de Atlas Energia, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Miguel Ferreira participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'atlas-energia', 'comunicacao'],[56]],
+    [1056,56,'executiva-3','Levei ao comitê a expansão da parceria com MobiNow','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com MobiNow. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 08/08/2026. @Natália Ibrahim apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'mobinow', 'estrategia'],[57]],
+    [1057,57,'financeiro-1','Aprovei o business case de Casa Norte com economia de R$ 192 mil','Consolidei custos, premissas e cenários do trabalho de Casa Norte. Apresentei ao comitê a alternativa com economia anual estimada de R$ 192 mil, condicionada a três indicadores mensais. @Otávio Lopes revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'casa-norte', 'planejamento'],[58]],
+    [1058,58,'comercial-2','Meu diagnóstico de Órbita Educação virou proposta de R$ 209 mil','Depois da reunião inicial, conduzi o diagnóstico com Eduardo Paes e mapeei atraso na conciliação. Estruturei uma proposta de R$ 209 mil, com implantação em 4 meses e dois marcos de sucesso. @Priscila Oliveira participou comigo da revisão de margem e dos critérios de aceite.',['Negociação B2B'],['comercial', 'orbita-educacao', 'negociacao-b2b'],[59]],
+    [1059,59,'projetos-3','Conduzi o kick-off do projeto Ponto Certo','Assumi o projeto de Ponto Certo depois do contrato comercial. No kick-off de 11/03/2026, alinhei backlog, matriz de riscos e responsáveis com @Renato Ramos. Defini a primeira entrega para 28/04/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'ponto-certo', 'agile'],[60]],
+    [1060,60,'operacional-1','Reduzi o SLA de Lume Farma em 17% no primeiro ciclo','Analisei os gargalos da operação de Lume Farma, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 19 dias, reduzi o SLA de 67 para 29 horas. @Ana Almeida acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'lume-farma', 'processos'],[61]],
+    [1061,61,'recursos-humanos-2','Levei o onboarding de XPTO Logística a 18% de adesão','Estruturei a trilha de integração das pessoas envolvidas em XPTO Logística, com padrinho, checklist de acessos e conversa de contexto. Em 20 dias, chegamos a 18% de adesão. @Bruno Dias me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'xpto-logistica', 'people-analytics'],[62]],
+    [1062,62,'institucional-3','Alinhei a comunicação de Nexa Saúde com todas as áreas','Criei o plano de comunicação de Nexa Saúde, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Camila Gomes participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'nexa-saude', 'comunicacao'],[63]],
+    [1063,63,'executiva-1','Levei ao comitê a expansão da parceria com Aurora Foods','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Aurora Foods. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 15/07/2026. @Diego Jardim apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'aurora-foods', 'estrategia'],[64]],
+    [1064,64,'financeiro-2','Aprovei o business case de VerdeBank com economia de R$ 311 mil','Consolidei custos, premissas e cenários do trabalho de VerdeBank. Apresentei ao comitê a alternativa com economia anual estimada de R$ 311 mil, condicionada a três indicadores mensais. @Elisa Mendes revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'verdebank', 'planejamento'],[65]],
+    [1065,65,'comercial-3','Fechei contrato de R$ 328 mil com Atlas Energia','Na reunião de fechamento de 17/01/2026, apresentei o business case que construí a partir dos dados de Atlas Energia. Fechamos um contrato de R$ 328 mil, com início em 05/02/2026 e patrocínio executivo de Marina Lopes. Reconheço @Felipe Pereira pela cadência que originou esta oportunidade.',['Estratégia de preços'],['comercial', 'atlas-energia', 'estrategia-de-precos'],[66]],
+    [1066,66,'projetos-1','Conduzi o kick-off do projeto MobiNow','Assumi o projeto de MobiNow depois do contrato comercial. No kick-off de 18/02/2026, alinhei backlog, matriz de riscos e responsáveis com @Gabriela Silva. Defini a primeira entrega para 15/03/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'mobinow', 'agile'],[67]],
+    [1067,67,'operacional-2','Reduzi o SLA de Casa Norte em 24% no primeiro ciclo','Analisei os gargalos da operação de Casa Norte, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 26 dias, reduzi o SLA de 54 para 24 horas. @Henrique Barbosa acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'casa-norte', 'processos'],[68]],
+    [1068,68,'recursos-humanos-3','Levei o onboarding de Órbita Educação a 25% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Órbita Educação, com padrinho, checklist de acessos e conversa de contexto. Em 27 dias, chegamos a 25% de adesão. @Isabela Esteves me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'orbita-educacao', 'people-analytics'],[69]],
+    [1069,69,'institucional-1','Alinhei a comunicação de Ponto Certo com todas as áreas','Criei o plano de comunicação de Ponto Certo, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @João Henriques participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'ponto-certo', 'comunicacao'],[70]],
+    [1070,70,'executiva-2','Levei ao comitê a expansão da parceria com Lume Farma','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Lume Farma. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 22/06/2026. @Karen Klein apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'lume-farma', 'estrategia'],[71]],
+    [1071,71,'financeiro-3','Aprovei o business case de XPTO Logística com economia de R$ 430 mil','Consolidei custos, premissas e cenários do trabalho de XPTO Logística. Apresentei ao comitê a alternativa com economia anual estimada de R$ 430 mil, condicionada a três indicadores mensais. @Leonardo Nogueira revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'xpto-logistica', 'planejamento'],[72]],
+    [1072,72,'comercial-1','Reunião com Nexa Saúde marcada após abordagem multicanal','Na prospecção de 24/08/2026, combinei pesquisa de contexto no LinkedIn, indicação interna e um e-mail com três hipóteses de ganho operacional. Com essa abordagem, marquei uma conversa de 45 minutos com André Martins, responsável por operações da Nexa Saúde. @Mariana Queiroz me ajudou a revisar o roteiro antes do envio.',['Prospecção outbound'],['comercial', 'nexa-saude', 'prospeccao-outbound'],[73]],
+    [1073,73,'projetos-2','Conduzi o kick-off do projeto Aurora Foods','Assumi o projeto de Aurora Foods depois do contrato comercial. No kick-off de 01/01/2026, alinhei backlog, matriz de riscos e responsáveis com @Nicolas Teixeira. Defini a primeira entrega para 22/02/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'aurora-foods', 'agile'],[74]],
+    [1074,74,'operacional-3','Reduzi o SLA de VerdeBank em 31% no primeiro ciclo','Analisei os gargalos da operação de VerdeBank, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 15 dias, reduzi o SLA de 61 para 19 horas. @Olívia Cardoso acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'verdebank', 'processos'],[75]],
+    [1075,75,'recursos-humanos-1','Levei o onboarding de Atlas Energia a 32% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Atlas Energia, com padrinho, checklist de acessos e conversa de contexto. Em 16 dias, chegamos a 32% de adesão. @Paulo Ferreira me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'atlas-energia', 'people-analytics'],[76]],
+    [1076,76,'institucional-2','Alinhei a comunicação de MobiNow com todas as áreas','Criei o plano de comunicação de MobiNow, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Queila Ibrahim participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'mobinow', 'comunicacao'],[77]],
+    [1077,77,'executiva-3','Levei ao comitê a expansão da parceria com Casa Norte','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Casa Norte. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 05/05/2026. @Rafael Lopes apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'casa-norte', 'estrategia'],[78]],
+    [1078,78,'financeiro-1','Aprovei o business case de Órbita Educação com economia de R$ 129 mil','Consolidei custos, premissas e cenários do trabalho de Órbita Educação. Apresentei ao comitê a alternativa com economia anual estimada de R$ 129 mil, condicionada a três indicadores mensais. @Sofia Oliveira revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'orbita-educacao', 'planejamento'],[79]],
+    [1079,79,'comercial-2','Meu diagnóstico de Ponto Certo virou proposta de R$ 146 mil','Depois da reunião inicial, conduzi o diagnóstico com Carolina Reis e mapeei atraso na conciliação. Estruturei uma proposta de R$ 146 mil, com implantação em 5 meses e dois marcos de sucesso. @Thiago Ramos participou comigo da revisão de margem e dos critérios de aceite.',['Negociação B2B'],['comercial', 'ponto-certo', 'negociacao-b2b'],[80]],
+    [1080,80,'projetos-3','Conduzi o kick-off do projeto Lume Farma','Assumi o projeto de Lume Farma depois do contrato comercial. No kick-off de 08/08/2026, alinhei backlog, matriz de riscos e responsáveis com @Ursula Almeida. Defini a primeira entrega para 29/09/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'lume-farma', 'agile'],[81]],
+    [1081,81,'operacional-1','Reduzi o SLA de XPTO Logística em 38% no primeiro ciclo','Analisei os gargalos da operação de XPTO Logística, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 22 dias, reduzi o SLA de 48 para 26 horas. @Victor Dias acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'xpto-logistica', 'processos'],[82]],
+    [1082,82,'recursos-humanos-2','Levei o onboarding de Nexa Saúde a 12% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Nexa Saúde, com padrinho, checklist de acessos e conversa de contexto. Em 23 dias, chegamos a 12% de adesão. @Wesley Gomes me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'nexa-saude', 'people-analytics'],[83]],
+    [1083,83,'institucional-3','Alinhei a comunicação de Aurora Foods com todas as áreas','Criei o plano de comunicação de Aurora Foods, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Yasmin Jardim participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'aurora-foods', 'comunicacao'],[84]],
+    [1084,84,'executiva-1','Levei ao comitê a expansão da parceria com VerdeBank','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com VerdeBank. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 12/04/2026. @Aline Mendes apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'verdebank', 'estrategia'],[85]],
+    [1085,85,'financeiro-2','Aprovei o business case de Atlas Energia com economia de R$ 248 mil','Consolidei custos, premissas e cenários do trabalho de Atlas Energia. Apresentei ao comitê a alternativa com economia anual estimada de R$ 248 mil, condicionada a três indicadores mensais. @Breno Pereira revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'atlas-energia', 'planejamento'],[86]],
+    [1086,86,'comercial-3','Fechei contrato de R$ 265 mil com MobiNow','Na reunião de fechamento de 14/06/2026, apresentei o business case que construí a partir dos dados de MobiNow. Fechamos um contrato de R$ 265 mil, com início em 06/07/2026 e patrocínio executivo de Eduardo Paes. Reconheço @Clara Silva pela cadência que originou esta oportunidade.',['Estratégia de preços'],['comercial', 'mobinow', 'estrategia-de-precos'],[87]],
+    [1087,87,'projetos-1','Conduzi o kick-off do projeto Casa Norte','Assumi o projeto de Casa Norte depois do contrato comercial. No kick-off de 15/07/2026, alinhei backlog, matriz de riscos e responsáveis com @Daniel Barbosa. Defini a primeira entrega para 16/08/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'casa-norte', 'agile'],[88]],
+    [1088,88,'operacional-2','Reduzi o SLA de Órbita Educação em 18% no primeiro ciclo','Analisei os gargalos da operação de Órbita Educação, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 29 dias, reduzi o SLA de 55 para 21 horas. @Eduarda Esteves acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'orbita-educacao', 'processos'],[89]],
+    [1089,89,'recursos-humanos-3','Levei o onboarding de Ponto Certo a 19% de adesão','Estruturei a trilha de integração das pessoas envolvidas em Ponto Certo, com padrinho, checklist de acessos e conversa de contexto. Em 30 dias, chegamos a 19% de adesão. @Fábio Henriques me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'ponto-certo', 'people-analytics'],[90]],
+    [1090,90,'institucional-1','Alinhei a comunicação de Lume Farma com todas as áreas','Criei o plano de comunicação de Lume Farma, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Giovana Klein participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'lume-farma', 'comunicacao'],[91]],
+    [1091,91,'executiva-2','Levei ao comitê a expansão da parceria com XPTO Logística','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com XPTO Logística. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 19/03/2026. @Heitor Nogueira apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'xpto-logistica', 'estrategia'],[92]],
+    [1092,92,'financeiro-3','Aprovei o business case de Nexa Saúde com economia de R$ 367 mil','Consolidei custos, premissas e cenários do trabalho de Nexa Saúde. Apresentei ao comitê a alternativa com economia anual estimada de R$ 367 mil, condicionada a três indicadores mensais. @Ingrid Queiroz revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'nexa-saude', 'planejamento'],[93]],
+    [1093,93,'comercial-1','Reunião com Aurora Foods marcada após abordagem multicanal','Na prospecção de 21/05/2026, combinei pesquisa de contexto no LinkedIn, indicação interna e um e-mail com três hipóteses de ganho operacional. Com essa abordagem, marquei uma conversa de 45 minutos com Marina Lopes, responsável por operações da Aurora Foods. @Júlio Teixeira me ajudou a revisar o roteiro antes do envio.',['Prospecção outbound'],['comercial', 'aurora-foods', 'prospeccao-outbound'],[94]],
+    [1094,94,'projetos-2','Conduzi o kick-off do projeto VerdeBank','Assumi o projeto de VerdeBank depois do contrato comercial. No kick-off de 22/06/2026, alinhei backlog, matriz de riscos e responsáveis com @Larissa Cardoso. Defini a primeira entrega para 23/07/2026, com critério de aceite validado pelo cliente.',['Agile'],['projetos', 'verdebank', 'agile'],[95]],
+    [1095,95,'operacional-3','Reduzi o SLA de Atlas Energia em 25% no primeiro ciclo','Analisei os gargalos da operação de Atlas Energia, desenhei um fluxo com quatro pontos de controle e implantei um checklist diário. Após 18 dias, reduzi o SLA de 62 para 28 horas. @Miguel Ferreira acompanhou comigo a medição na rotina de melhoria contínua.',['Processos'],['operacional', 'atlas-energia', 'processos'],[96]],
+    [1096,96,'recursos-humanos-1','Levei o onboarding de MobiNow a 26% de adesão','Estruturei a trilha de integração das pessoas envolvidas em MobiNow, com padrinho, checklist de acessos e conversa de contexto. Em 19 dias, chegamos a 26% de adesão. @Natália Ibrahim me ajudou a transformar os aprendizados em um modelo reaproveitável para novas equipes.',['People analytics'],['recursos-humanos', 'mobinow', 'people-analytics'],[97]],
+    [1097,97,'institucional-2','Alinhei a comunicação de Casa Norte com todas as áreas','Criei o plano de comunicação de Casa Norte, com mensagens para liderança, equipes e parceiros. O material foi aprovado sem retrabalho porque @Otávio Lopes participou comigo da revisão de linguagem e riscos reputacionais. Meu próximo passo é publicar o case no encontro mensal.',['Comunicação'],['institucional', 'casa-norte', 'comunicacao'],[98]],
+    [1098,98,'executiva-3','Levei ao comitê a expansão da parceria com Órbita Educação','Levei ao comitê os resultados comerciais, operacionais e de pessoas da parceria com Órbita Educação. Recomendei expandir o contrato para uma segunda unidade, com revisão executiva em 02/02/2026. @Priscila Oliveira apresentou comigo os indicadores que sustentaram a recomendação.',['Estratégia'],['executiva', 'orbita-educacao', 'estrategia'],[99]],
+    [1099,99,'financeiro-1','Aprovei o business case de Ponto Certo com economia de R$ 486 mil','Consolidei custos, premissas e cenários do trabalho de Ponto Certo. Apresentei ao comitê a alternativa com economia anual estimada de R$ 486 mil, condicionada a três indicadores mensais. @Renato Ramos revisou comigo a governança e o plano de desembolso.',['Planejamento'],['financeiro', 'ponto-certo', 'planejamento'],[100]],
+    [1100,100,'comercial-2','Meu diagnóstico de Lume Farma virou proposta de R$ 83 mil','Depois da reunião inicial, conduzi o diagnóstico com André Martins e mapeei atraso na conciliação. Estruturei uma proposta de R$ 83 mil, com implantação em 6 meses e dois marcos de sucesso. @Ana Souza participou comigo da revisão de margem e dos critérios de aceite.',['Negociação B2B'],['comercial', 'lume-farma', 'negociacao-b2b'],[1]]
+  ];
+  base.push(...historias);
+  const now = Date.now();
+  return base.map((p,i) => ({
+    id:p[0], user:p[1], feedId:p[2], title:p[3], text:p[4],
+    categoria:p[5][0], tags:p[6],
+    data: new Date(now - (i+1)*(42*3600*1000)).toISOString(),
+    likes: [], salvos: [], comentarios: [], mentions: p[7] || []
+  }));
+}
+
+function seedDB(){
+  const users = seedUsers();
+  const db = {
+    version: 1,
+    users,
+    posts: seedPosts(),
+    notifs: [],
+    rolePasswords: {1:"123456",2:"123456",3:"123456"},
+    nextId: 1000
+  };
+  db.posts[0].likes = [1,3,7];
+  db.posts[2].likes = [3,13];
+  db.posts[2].comentarios = [{id:901,user:3,text:"Ótimo material. Vamos levar isso para o time todo na próxima semana.",data:new Date(Date.now()-36e5*20).toISOString()}];
+  recomputeHierarchy(db.users);
+  return db;
+}
+
+/* ===================== Persistência ===================== */
+const STORE = "mind.db.v2", SESSION = "mind.session.v1", THEME = "mind.theme.v1";
+let db, current = null, route = "inicio", searchTerm = "";
+const collapsed = {};
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORE);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.users && parsed.posts){ recomputeHierarchy(parsed.users); return parsed; }
+    }
+  }catch(e){ /* armazenamento indisponível: seguimos em memória */ }
+  return seedDB();
+}
+function saveDB(){
+  try{ localStorage.setItem(STORE, JSON.stringify(db)); }catch(e){}
+}
+function resetDB(){
+  db = seedDB(); saveDB();
+  try{ localStorage.removeItem(SESSION); }catch(e){}
+  toast("Base de demonstração restaurada.","info");
+  logout();
+}
+function newId(){ db.nextId = (db.nextId || 1000) + 1; saveDB(); return db.nextId; }
+
+/* ===================== Hierarquia ===================== */
+function recomputeHierarchy(users){
+  const ceo = users.find(u => u.area === "Executiva" && u.nivel === 3) || users.find(u => u.nivel === 3);
+  users.forEach(u => {
+    if(u.gestorManual && users.some(x => x.id === u.gestorId && x.id !== u.id)) return;
+    if(!ceo){ u.gestorId = null; return; }
+    if(u.id === ceo.id){ u.gestorId = null; return; }
+    if(u.nivel === 3){ u.gestorId = ceo.id; return; }
+    const lider = users.find(x => x.area === u.area && x.nivel === 3);
+    if(u.nivel === 2){ u.gestorId = lider ? lider.id : ceo.id; return; }
+    const gestor = users.find(x => x.area === u.area && x.nivel === 2);
+    u.gestorId = gestor ? gestor.id : (lider ? lider.id : ceo.id);
+  });
+  // evita ciclos
+  users.forEach(u => {
+    const seen = new Set([u.id]);
+    let p = users.find(x => x.id === u.gestorId);
+    while(p){
+      if(seen.has(p.id)){ u.gestorId = ceo ? ceo.id : null; break; }
+      seen.add(p.id);
+      p = users.find(x => x.id === p.gestorId);
+    }
+  });
+}
+
+/* ===================== Utilidades ===================== */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function initials(nome){ return String(nome||"?").trim().split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
+function userById(id){ return db.users.find(u => u.id === id); }
+function feedById(id){ return feedsStructure.find(f => f.id === id); }
+function fmtDate(iso){
+  const d = new Date(iso); if(isNaN(d)) return "";
+  const diff = (Date.now() - d.getTime())/1000;
+  if(diff < 60) return "agora";
+  if(diff < 3600) return `há ${Math.floor(diff/60)} min`;
+  if(diff < 86400) return `há ${Math.floor(diff/3600)} h`;
+  if(diff < 604800) return `há ${Math.floor(diff/86400)} d`;
+  return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
+}
+function toast(msg, kind){
+  const el = document.createElement("div");
+  el.className = "toast" + (kind === "err" ? " err" : kind === "info" ? " info" : "");
+  el.textContent = msg;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(()=>el.remove(),320); }, 2800);
+}
+function confirmAction(title, text, onOk){
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmText").textContent = text;
+  const btn = document.getElementById("confirmOk");
+  const clone = btn.cloneNode(true);
+  btn.parentNode.replaceChild(clone, btn);
+  clone.addEventListener("click", () => { closeModal("confirmModal"); onOk(); });
+  document.getElementById("confirmModal").classList.remove("hidden");
+}
+
+/* ===================== Permissões ===================== */
+function visibleFeeds(u){
+  return feedsStructure.filter(f =>
+    u.nivel >= f.nivelRequired && (f.area === "Geral" || f.area === u.area || u.nivel === 3)
+  );
+}
+function canSeeFeed(u, feedId){ return visibleFeeds(u).some(f => f.id === feedId); }
+function canSeePost(p, viewer){ return canSeeFeed(viewer, p.feedId); }
+function canEditPost(p, viewer){ return p.user === viewer.id || viewer.nivel === 3; }
+function postsVisible(viewer){
+  return db.posts.filter(p => canSeePost(p, viewer))
+    .sort((a,b) => new Date(b.data) - new Date(a.data));
+}
+function feedCount(feedId){ return db.posts.filter(p => p.feedId === feedId).length; }
+
+/* ===================== Notificações ===================== */
+function notify(userId, texto, alvo){
+  if(!userId || userId === current.id) return;
+  db.notifs.unshift({id:newId(), user:userId, texto, alvo, data:new Date().toISOString(), lida:false});
+  saveDB();
+}
+function myNotifs(){ return db.notifs.filter(n => n.user === current.id); }
+function unreadCount(){ return myNotifs().filter(n => !n.lida).length; }
+function refreshNotifBadge(){
+  const b = document.getElementById("notifBadge"), n = unreadCount();
+  b.textContent = n; b.classList.toggle("hidden", n === 0);
+}
+
+/* ===================== Autenticação ===================== */
+function fillUsersSelect(){
+  const s = document.getElementById("loginUserSelect");
+  s.innerHTML = db.users
+    .slice().sort((a,b) => b.nivel - a.nivel || a.area.localeCompare(b.area))
+    .map(u => `<option value="${u.id}">${esc(u.nome)} — ${esc(u.cargo)} · ${esc(u.area)}</option>`).join("");
+  const sel = document.getElementById("regArea");
+  sel.innerHTML = AREAS.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+}
+function switchAuthTab(tab){
+  document.getElementById("tabLoginBtn").classList.toggle("active", tab === "login");
+  document.getElementById("tabRegisterBtn").classList.toggle("active", tab === "register");
+  document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
+  document.getElementById("registerForm").classList.toggle("hidden", tab !== "register");
+}
+function handleLogin(e){
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const pass = document.getElementById("loginPass").value;
+  const u = db.users.find(x => x.email.toLowerCase() === email);
+  if(!u || u.senha !== pass){ toast("E-mail ou senha não conferem.","err"); return; }
+  startSession(u);
+}
+function loginAsSelected(){
+  const u = userById(Number(document.getElementById("loginUserSelect").value));
+  if(u) startSession(u);
+}
+function handleRegister(e){
+  e.preventDefault();
+  const nome = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim().toLowerCase();
+  const senha = document.getElementById("regPass").value;
+  const area = document.getElementById("regArea").value;
+  const nivel = Number(document.getElementById("regCargo").value);
+  const sec = document.getElementById("regSecurityPass").value;
+
+  if(db.users.some(u => u.email.toLowerCase() === email)){ toast("Esse e-mail já tem conta na Mind.","err"); return; }
+  if(sec !== db.rolePasswords[nivel]){ toast("A senha de liberação não corresponde a esse cargo. Peça a senha à sua liderança.","err"); return; }
+
+  const novo = {
+    id:newId(), nome, email, senha, area, nivel, cargo:NIVEL_NOME[nivel],
+    bio:"", skills:[], telefone:"", local:"", desde:new Date().toISOString().slice(0,10), gestorId:null
+  };
+  db.users.push(novo);
+  recomputeHierarchy(db.users);
+  saveDB();
+  toast("Conta criada. Bem-vindo à Mind.");
+  startSession(novo);
+}
+function startSession(u){
+  current = u;
+  try{ localStorage.setItem(SESSION, String(u.id)); }catch(e){}
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("appScreen").classList.remove("hidden");
+  document.getElementById("topAvatar").textContent = initials(u.nome);
+  document.getElementById("topName").textContent = u.nome;
+  document.getElementById("topRole").textContent = `${u.cargo} · ${u.area}`;
+  refreshNotifBadge();
+  go("inicio");
+}
+function logout(){
+  current = null; searchTerm = "";
+  try{ localStorage.removeItem(SESSION); }catch(e){}
+  document.getElementById("appScreen").classList.add("hidden");
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("globalSearch").value = "";
+  fillUsersSelect();
+}
+
+/* ===================== Navegação ===================== */
+function toggleSidebar(force){
+  const sb = document.getElementById("sidebar"), bd = document.getElementById("backdrop");
+  const open = force === undefined ? !sb.classList.contains("open") : force;
+  sb.classList.toggle("open", open); bd.classList.toggle("show", open);
+}
+function toggleGroup(key){ collapsed[key] = !collapsed[key]; buildSidebar(); }
+
+function buildSidebar(){
+  const nav = document.getElementById("sidebarNav");
+  const item = (id,label,extra="") =>
+    `<button class="item ${route===id?"active":""}" onclick="go('${id}')"><span>${label}</span>${extra}</button>`;
+
+  let html = `<div class="nav-group">
+    ${item("inicio","Início")}
+    ${item("perfil:"+current.id,"Meu perfil")}
+    ${item("salvos","Salvos", `<span class="count">${db.posts.filter(p=>p.salvos.includes(current.id)&&canSeePost(p,current)).length}</span>`)}
+    ${item("notificacoes","Notificações", unreadCount()?`<span class="count">${unreadCount()}</span>`:"")}
+    ${item("pessoas","Pessoas")}
+    ${item("conhecimento","Base de conhecimento")}
+    ${item("estrutura","Organograma")}
+    ${current.nivel===3 ? item("admin","Administração") : ""}
+  </div>`;
+
+  const areasOrdem = ["Geral", ...AREAS];
+  areasOrdem.forEach(sec => {
+    const feeds = visibleFeeds(current).filter(f => f.area === sec);
+    if(!feeds.length) return;
+    const key = "g-"+slugify(sec);
+    const isCol = !!collapsed[key];
+    html += `<div class="nav-group">
+      <div class="nav-title ${isCol?"collapsed":""}" onclick="toggleGroup('${key}')" role="button" tabindex="0"
+           onkeydown="if(event.key==='Enter')toggleGroup('${key}')">
+        <span>${esc(sec === "Geral" ? "Feeds gerais" : sec)}</span><span class="chev">▼</span>
+      </div>
+      <div class="${isCol?"hidden":""}">
+        ${feeds.map(f => `<button class="item sub ${route==="feed:"+f.id?"active":""}" onclick="go('feed:${f.id}')">
+            <span>${esc(f.title)}</span><span class="count">${feedCount(f.id)}</span></button>`).join("")}
+      </div>
+    </div>`;
+  });
+
+  html += `<div class="nav-group" style="border-top:1px solid var(--line);padding-top:10px">
+    <button class="item" onclick="logout()">Sair da conta</button></div>`;
+  nav.innerHTML = html;
+}
+
+function go(r){
+  route = r; searchTerm = "";
+  document.getElementById("globalSearch").value = "";
+  toggleSidebar(false);
+  render();
+  window.scrollTo({top:0, behavior:"instant"});
+}
+function render(){
+  buildSidebar(); refreshNotifBadge();
+  const c = document.getElementById("content");
+  if(searchTerm){ c.innerHTML = pageSearch(); return; }
+  if(route === "inicio") c.innerHTML = pageHome();
+  else if(route === "pessoas"){ c.innerHTML = pagePeople(); renderPeople(); }
+  else if(route === "conhecimento") c.innerHTML = pageKnowledge();
+  else if(route === "salvos") c.innerHTML = pageSaved();
+  else if(route === "notificacoes") c.innerHTML = pageNotifs();
+  else if(route === "admin") c.innerHTML = pageAdmin();
+  else if(route === "estrutura"){ c.innerHTML = pageOrg(); setupOrgPanZoom(); fitOrg(); }
+  else if(route.startsWith("perfil:")) c.innerHTML = pageProfile(Number(route.split(":")[1]));
+  else if(route.startsWith("feed:")) c.innerHTML = pageFeed(route.split(":")[1]);
+  else if(route.startsWith("categoria:")) c.innerHTML = pageCategory(decodeURIComponent(route.split(":").slice(1).join(":")));
+  else c.innerHTML = `<div class="empty"><strong>Página não encontrada</strong>Volte ao início para continuar.</div>`;
+}
+
+/* ===================== Componentes ===================== */
+function postCard(p, opts){
+  opts = opts || {};
+  const u = userById(p.user);
+  const f = feedById(p.feedId);
+  const liked = p.likes.includes(current.id);
+  const saved = p.salvos.includes(current.id);
+  const podeEditar = canEditPost(p, current);
+  return `<article class="post" id="post-${p.id}">
+    <div class="post-head">
+      <div class="avatar">${esc(initials(u ? u.nome : "?"))}</div>
+      <div class="who" onclick="go('perfil:${u ? u.id : 0}')">
+        <strong>${esc(u ? u.nome : "Colaborador removido")}</strong>
+        <div class="meta">${esc(u ? u.cargo + " · " + u.area : "—")} · ${fmtDate(p.data)}${p.editado ? " · editado" : ""}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <button class="btn subtle small" onclick="go('feed:${p.feedId}')">${esc(f ? f.title : "Feed")}</button>
+      </div>
+    </div>
+    <h3>${esc(p.title)}</h3>
+    <p class="body">${esc(p.text)}</p>
+    ${(p.mentions||[]).length ? `<div class="meta" style="margin-top:10px">Marcados: ${(p.mentions||[]).map(id => { const m = userById(id); return m ? `<button class="btn subtle small" onclick="go('perfil:${m.id}')">@${esc(m.nome)}</button>` : ""; }).join("")}</div>` : ""}
+    <div>
+      <span class="chip brand" onclick="go('categoria:${encodeURIComponent(p.categoria)}')" style="cursor:pointer">${esc(p.categoria)}</span>
+      ${(p.tags||[]).map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+    </div>
+    <div class="actions">
+      <button class="btn ghost small ${liked?"on":""}" onclick="toggleLike(${p.id})">Reconhecer${p.likes.length?" · "+p.likes.length:""}</button>
+      <button class="btn ghost small ${saved?"on":""}" onclick="toggleSave(${p.id})">${saved?"Salvo":"Salvar"}</button>
+      <button class="btn ghost small" onclick="toggleComments(${p.id})">Comentários${p.comentarios.length?" · "+p.comentarios.length:""}</button>
+      ${podeEditar ? `<button class="btn subtle small" onclick="openPostModal(null, ${p.id})">Editar</button>
+      <button class="btn subtle small" onclick="askDeletePost(${p.id})">Excluir</button>` : ""}
+    </div>
+    <div class="comments ${opts.openComments ? "" : "hidden"}" id="comments-${p.id}">
+      ${p.comentarios.map(c => commentHTML(p, c)).join("") || '<div class="meta">Ainda sem comentários. Comece a conversa.</div>'}
+      <form class="comment-form" onsubmit="addComment(event, ${p.id})">
+        <input type="text" placeholder="Escrever um comentário" required>
+        <button class="btn primary small" type="submit">Enviar</button>
+      </form>
+    </div>
+  </article>`;
+}
+function commentHTML(p, c){
+  const u = userById(c.user);
+  const pode = c.user === current.id || current.nivel === 3;
+  return `<div class="comment">
+    <div class="avatar" style="width:30px;height:30px;font-size:11px">${esc(initials(u?u.nome:"?"))}</div>
+    <div class="bubble">
+      <div style="display:flex;gap:8px;align-items:center">
+        <strong style="font-size:13px;cursor:pointer" onclick="go('perfil:${u?u.id:0}')">${esc(u?u.nome:"Colaborador")}</strong>
+        <span class="meta">${fmtDate(c.data)}</span>
+        ${pode ? `<button class="btn subtle small" style="margin-left:auto" onclick="deleteComment(${p.id},${c.id})">Excluir</button>` : ""}
+      </div>
+      <p>${esc(c.text)}</p>
+    </div>
+  </div>`;
+}
+function feedList(list, vazio){
+  if(!list.length) return `<div class="empty"><strong>${esc(vazio.titulo)}</strong>${esc(vazio.texto)}</div>`;
+  return `<div class="feed">${list.map(p => postCard(p)).join("")}</div>`;
+}
+
+/* ===================== Páginas ===================== */
+function pageHome(){
+  const vis = postsVisible(current);
+  const meus = db.posts.filter(p => p.user === current.id);
+  const reconhecimentos = meus.reduce((s,p) => s + p.likes.length, 0);
+  const cats = [...new Set(vis.map(p => p.categoria))].sort();
+
+  const ranking = db.users.map(u => ({
+    u, n: db.posts.filter(p => p.user === u.id && canSeePost(p, current)).length
+  })).filter(x => x.n > 0).sort((a,b) => b.n - a.n).slice(0,5);
+  const maxN = ranking.length ? ranking[0].n : 1;
+
+  return `<div class="page-title">
+    <div>
+      <h2>Olá, ${esc(current.nome.split(" ")[0])}</h2>
+      <div class="sub">Você vê ${vis.length} publicações, de acordo com o seu nível e a sua área.</div>
+    </div>
+    <button class="btn primary" onclick="openPostModal()">Compartilhar conhecimento</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="muted">Publicações visíveis</div><div class="stat">${vis.length}</div></div>
+    <div class="card"><div class="muted">Minhas publicações</div><div class="stat">${meus.length}</div></div>
+    <div class="card"><div class="muted">Reconhecimentos recebidos</div><div class="stat">${reconhecimentos}</div></div>
+    <div class="card"><div class="muted">Pessoas na área ${esc(current.area)}</div><div class="stat">${db.users.filter(u=>u.area===current.area).length}</div></div>
+  </div>
+
+  <div class="notice">Conectado como <strong>${esc(current.cargo)}</strong> da área <strong>${esc(current.area)}</strong>.
+  ${current.nivel === 3
+    ? "Como liderança, você acompanha os feeds de todas as áreas e administra as senhas de cargo."
+    : `Você acompanha os feeds gerais e os feeds de ${esc(current.area)} até o nível ${current.nivel}.`}</div>
+
+  <div class="toolbar">
+    <select id="homeFeedFilter" onchange="renderHomeFeed()">
+      <option value="">Todos os feeds visíveis</option>
+      ${visibleFeeds(current).map(f => `<option value="${f.id}">${esc(f.title)}</option>`).join("")}
+    </select>
+    <select id="homeCatFilter" onchange="renderHomeFeed()">
+      <option value="">Todas as categorias</option>
+      ${cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("")}
+    </select>
+    <select id="homeSort" onchange="renderHomeFeed()">
+      <option value="recentes">Mais recentes</option>
+      <option value="reconhecidas">Mais reconhecidas</option>
+      <option value="comentadas">Mais comentadas</option>
+    </select>
+  </div>
+
+  <div id="homeFeed">${feedList(vis.slice(0,8), {titulo:"Nada publicado ainda",texto:"Seja a primeira pessoa a registrar um aprendizado por aqui."})}</div>
+
+  ${ranking.length ? `<h3 style="margin:28px 0 12px">Quem mais compartilha</h3>
+  <div class="card">
+    ${ranking.map(r => `<div class="list-row">
+      <div class="avatar">${esc(initials(r.u.nome))}</div>
+      <div style="flex:1;min-width:0">
+        <strong style="cursor:pointer" onclick="go('perfil:${r.u.id}')">${esc(r.u.nome)}</strong>
+        <div class="meta">${esc(r.u.cargo)} · ${esc(r.u.area)}</div>
+        <div class="bar" style="margin-top:7px"><i style="width:${Math.round(r.n/maxN*100)}%"></i></div>
+      </div>
+      <strong>${r.n}</strong>
+    </div>`).join("")}
+  </div>` : ""}`;
+}
+function renderHomeFeed(){
+  const feed = document.getElementById("homeFeedFilter").value;
+  const cat = document.getElementById("homeCatFilter").value;
+  const sort = document.getElementById("homeSort").value;
+  let list = postsVisible(current);
+  if(feed) list = list.filter(p => p.feedId === feed);
+  if(cat) list = list.filter(p => p.categoria === cat);
+  if(sort === "reconhecidas") list.sort((a,b) => b.likes.length - a.likes.length);
+  if(sort === "comentadas") list.sort((a,b) => b.comentarios.length - a.comentarios.length);
+  document.getElementById("homeFeed").innerHTML =
+    feedList(list.slice(0,20), {titulo:"Nenhuma publicação com esses filtros",texto:"Ajuste o feed ou a categoria para ver mais."});
+}
+
+function pageFeed(feedId){
+  const f = feedById(feedId);
+  if(!f) return `<div class="empty"><strong>Feed inexistente</strong>Escolha um feed no menu lateral.</div>`;
+  if(!canSeeFeed(current, feedId)){
+    return `<div class="empty"><strong>Feed restrito</strong>Este feed é de ${esc(f.area)} e exige o nível ${esc(NIVEL_NOME[f.nivelRequired])}. Fale com a sua liderança se precisa de acesso.</div>`;
+  }
+  const list = db.posts.filter(p => p.feedId === feedId).sort((a,b) => new Date(b.data) - new Date(a.data));
+  return `<div class="page-title">
+    <div><h2>${esc(f.title)}</h2><div class="sub">${esc(f.desc)} Acesso mínimo: ${esc(NIVEL_NOME[f.nivelRequired])}.</div></div>
+    <button class="btn primary" onclick="openPostModal('${f.id}')">Publicar neste feed</button>
+  </div>
+  ${feedList(list, {titulo:"Feed vazio",texto:"Publique o primeiro conteúdo e dê o tom da conversa."})}`;
+}
+
+function pageCategory(cat){
+  const list = postsVisible(current).filter(p => p.categoria === cat);
+  return `<div class="page-title"><div><h2>${esc(cat)}</h2>
+    <div class="sub">Publicações desta categoria visíveis para você.</div></div>
+    <button class="btn ghost" onclick="go('conhecimento')">Voltar à base</button></div>
+    ${feedList(list, {titulo:"Sem registros nesta categoria",texto:"Publique algo e comece esta coleção."})}`;
+}
+
+function pageSaved(){
+  const list = postsVisible(current).filter(p => p.salvos.includes(current.id));
+  return `<div class="page-title"><div><h2>Salvos</h2>
+    <div class="sub">Os conteúdos que você guardou para consultar depois.</div></div></div>
+    ${feedList(list, {titulo:"Nada salvo ainda",texto:"Use “Salvar” em qualquer publicação para montar sua lista."})}`;
+}
+
+function pageProfile(userId){
+  const u = userById(userId);
+  if(!u) return `<div class="empty"><strong>Colaborador não encontrado</strong>Ele pode ter saído da organização.</div>`;
+  const isMe = current.id === u.id;
+  const list = db.posts.filter(p => p.user === u.id && canSeePost(p, current)).sort((a,b) => new Date(b.data) - new Date(a.data));
+  const marked = db.posts.filter(p => (p.mentions||[]).includes(u.id) && canSeePost(p, current)).sort((a,b) => new Date(b.data) - new Date(a.data));
+  const total = db.posts.filter(p => p.user === u.id).length;
+  const ocultas = total - list.length;
+  const gestor = userById(u.gestorId);
+  const equipe = db.users.filter(x => x.gestorId === u.id);
+  const recon = db.posts.filter(p => p.user === u.id).reduce((s,p) => s + p.likes.length, 0);
+
+  return `<div class="profile-header">
+    <div class="avatar lg">${esc(initials(u.nome))}</div>
+    <div style="flex:1;min-width:240px">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0;letter-spacing:-.4px">${esc(u.nome)}</h2>
+          <div class="muted" style="margin-top:4px">${esc(u.cargo)} · ${esc(u.area)}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          ${isMe ? `<button class="btn ghost" onclick="openEditProfileModal()">Editar perfil</button>` : ""}
+          ${(!isMe && current.nivel === 3) ? `<button class="btn ghost" onclick="openUserAdmin(${u.id})">Gerenciar cargo</button>` : ""}
+        </div>
+      </div>
+      <p style="margin:14px 0 0;line-height:1.6;max-width:70ch">${esc(u.bio || "Esta pessoa ainda não escreveu uma apresentação.")}</p>
+      <div class="skills-list">${(u.skills||[]).length ? u.skills.map(s => `<span class="skill-badge">${esc(s)}</span>`).join("") : '<span class="muted">Nenhuma competência cadastrada.</span>'}</div>
+      <div class="kv">
+        <span>E-mail</span><b>${esc(u.email)}</b>
+        <span>Responde a</span><b>${gestor ? esc(gestor.nome) + " — " + esc(gestor.cargo) : "Ninguém (topo da estrutura)"}</b>
+        ${equipe.length ? `<span>Equipe direta</span><b>${equipe.length} pessoa${equipe.length>1?"s":""}</b>` : ""}
+        ${u.telefone ? `<span>Contato</span><b>${esc(u.telefone)}</b>` : ""}
+        ${u.local ? `<span>Unidade</span><b>${esc(u.local)}</b>` : ""}
+        <span>Reconhecimentos</span><b>${recon}</b>
+      </div>
+    </div>
+  </div>
+
+  ${equipe.length ? `<h3 style="margin:0 0 10px">Equipe direta</h3>
+  <div class="grid" style="margin-bottom:24px">
+    ${equipe.map(e => `<div class="card" style="display:flex;gap:11px;align-items:center;cursor:pointer" onclick="go('perfil:${e.id}')">
+      <div class="avatar">${esc(initials(e.nome))}</div>
+      <div><strong>${esc(e.nome)}</strong><div class="meta">${esc(e.cargo)} · ${esc(e.area)}</div></div>
+    </div>`).join("")}
+  </div>` : ""}
+
+  <div class="page-title"><h3>Publicações (${list.length})</h3>
+    ${ocultas > 0 ? `<span class="meta">${ocultas} publicaç${ocultas>1?"ões":"ão"} fora do seu nível de acesso</span>` : ""}</div>
+  ${feedList(list, {titulo:"Nenhuma publicação visível",texto: isMe ? "Compartilhe seu primeiro aprendizado." : "Ou esta pessoa ainda não publicou, ou o conteúdo está acima do seu nível de acesso."})}
+  <div class="page-title" style="margin-top:28px"><h3>Posts marcados (${marked.length})</h3><span class="meta">Publicações de outras pessoas que citaram este perfil.</span></div>
+  ${feedList(marked, {titulo:"Nenhum post marcado",texto:"Quando alguém marcar esta pessoa em uma publicação, ela aparecerá aqui."})}`;
+}
+
+function pagePeople(){
+  return `<div class="page-title"><div><h2>Pessoas</h2>
+    <div class="sub">${db.users.length} colaboradores na organização. Busque por nome, área ou competência.</div></div></div>
+  <div class="toolbar">
+    <input id="pplSearch" type="search" placeholder="Nome, e-mail ou competência" oninput="renderPeople()">
+    <select id="pplArea" onchange="renderPeople()">
+      <option value="">Todas as áreas</option>${AREAS.map(a=>`<option>${esc(a)}</option>`).join("")}
+    </select>
+    <select id="pplNivel" onchange="renderPeople()">
+      <option value="">Todos os cargos</option><option value="3">Líder</option><option value="2">Gestor</option><option value="1">Consultor</option>
+    </select>
+  </div>
+  <div id="peopleTable"></div>`;
+}
+function renderPeople(){
+  const q = (document.getElementById("pplSearch").value || "").toLowerCase();
+  const area = document.getElementById("pplArea").value;
+  const nivel = document.getElementById("pplNivel").value;
+  let list = db.users.filter(u => {
+    const hay = (u.nome + " " + u.email + " " + u.area + " " + (u.skills||[]).join(" ")).toLowerCase();
+    return (!q || hay.includes(q)) && (!area || u.area === area) && (!nivel || u.nivel === Number(nivel));
+  }).sort((a,b) => a.nome.localeCompare(b.nome));
+
+  const el = document.getElementById("peopleTable");
+  if(!list.length){ el.innerHTML = `<div class="empty"><strong>Ninguém encontrado</strong>Tente outro nome, área ou competência.</div>`; return; }
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Colaborador</th><th>Área</th><th>Cargo</th><th>Competências</th><th></th></tr></thead>
+    <tbody>${list.map(u => `<tr>
+      <td><div style="display:flex;gap:10px;align-items:center"><div class="avatar">${esc(initials(u.nome))}</div>
+        <div><strong>${esc(u.nome)}</strong><div class="meta">${esc(u.email)}</div></div></div></td>
+      <td>${esc(u.area)}</td><td>${esc(u.cargo)}</td>
+      <td>${(u.skills||[]).slice(0,3).map(s=>`<span class="chip">${esc(s)}</span>`).join("") || '<span class="meta">—</span>'}</td>
+      <td style="text-align:right"><button class="btn ghost small" onclick="go('perfil:${u.id}')">Ver perfil</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+
+function pageKnowledge(){
+  const vis = postsVisible(current);
+  const areasParaMostrar = current.nivel === 3 ? ["Geral", ...AREAS] : ["Geral", current.area];
+  return `<div class="page-title"><div><h2>Base de conhecimento</h2>
+    <div class="sub">Categorias temáticas com o que já foi registrado e está disponível para você.</div></div>
+    <button class="btn primary" onclick="openPostModal()">Registrar conhecimento</button></div>
+  ${areasParaMostrar.map(a => {
+    const cats = areaCategories[a] || [];
+    if(!cats.length) return "";
+    return `<h3 style="margin:22px 0 10px">${esc(a === "Geral" ? "Temas gerais" : a)}</h3>
+    <div class="grid">${cats.map(cat => {
+      const n = vis.filter(p => p.categoria === cat).length;
+      return `<div class="card" style="cursor:pointer" onclick="go('categoria:${encodeURIComponent(cat)}')">
+        <strong>${esc(cat)}</strong>
+        <div class="muted" style="margin-top:8px">${n ? n + (n>1?" registros":" registro") : "Sem registros ainda"}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }).join("")}`;
+}
+
+function pageNotifs(){
+  const list = myNotifs();
+  const marcar = list.some(n => !n.lida)
+    ? `<button class="btn ghost" onclick="markAllRead()">Marcar todas como lidas</button>` : "";
+  return `<div class="page-title"><div><h2>Notificações</h2>
+    <div class="sub">Reconhecimentos e comentários no que você publicou.</div></div>${marcar}</div>
+  <div class="card">${list.length ? list.map(n => `<div class="notif ${n.lida?"":"unread"}" onclick="openNotif(${n.id})">
+      ${n.lida ? "" : '<span class="dot"></span>'}
+      <div style="flex:1"><div>${esc(n.texto)}</div><div class="meta">${fmtDate(n.data)}</div></div>
+    </div>`).join("") : '<div class="meta">Nada por aqui ainda. Quando alguém reconhecer ou comentar o seu conteúdo, aparece nesta lista.</div>'}
+  </div>`;
+}
+function openNotif(id){
+  const n = db.notifs.find(x => x.id === id);
+  if(!n) return;
+  n.lida = true; saveDB();
+  if(n.alvo){
+    const p = db.posts.find(x => x.id === n.alvo);
+    if(p && canSeePost(p, current)){
+      route = "feed:" + p.feedId; render();
+      setTimeout(() => {
+        const el = document.getElementById("post-"+p.id);
+        if(el){ el.scrollIntoView({behavior:"smooth",block:"center"}); el.style.borderColor = "var(--primary)"; }
+      }, 60);
+      return;
+    }
+  }
+  render();
+}
+function markAllRead(){ myNotifs().forEach(n => n.lida = true); saveDB(); render(); }
+
+function pageAdmin(){
+  if(current.nivel < 3) return `<div class="empty"><strong>Área restrita</strong>Só a liderança administra cargos e senhas.</div>`;
+  const total = db.posts.length, usuarios = db.users.length;
+  return `<div class="page-title"><div><h2>Administração</h2>
+    <div class="sub">Senhas de liberação por cargo, quadro de pessoas e manutenção da base.</div></div></div>
+
+  <div class="grid" style="margin-bottom:22px">
+    <div class="card"><div class="muted">Colaboradores</div><div class="stat">${usuarios}</div></div>
+    <div class="card"><div class="muted">Publicações</div><div class="stat">${total}</div></div>
+    <div class="card"><div class="muted">Comentários</div><div class="stat">${db.posts.reduce((s,p)=>s+p.comentarios.length,0)}</div></div>
+    <div class="card"><div class="muted">Feeds ativos</div><div class="stat">${feedsStructure.filter(f=>feedCount(f.id)>0).length}/${feedsStructure.length}</div></div>
+  </div>
+
+  <h3 style="margin:0 0 10px">Senhas de liberação de cargo</h3>
+  <div class="card" style="max-width:520px;margin-bottom:26px">
+    <p class="sub" style="margin-top:0">Quem cria conta precisa informar a senha do cargo escolhido. É o que impede alguém de se cadastrar como liderança.</p>
+    <form onsubmit="saveRolePasswords(event)">
+      <label for="passLevel1">Consultor (nível 1)</label>
+      <input type="text" id="passLevel1" value="${esc(db.rolePasswords[1])}" required>
+      <label for="passLevel2">Gestor (nível 2)</label>
+      <input type="text" id="passLevel2" value="${esc(db.rolePasswords[2])}" required>
+      <label for="passLevel3">Líder (nível 3)</label>
+      <input type="text" id="passLevel3" value="${esc(db.rolePasswords[3])}" required>
+      <button type="submit" class="btn primary block" style="margin-top:18px">Salvar senhas</button>
+    </form>
+  </div>
+
+  <h3 style="margin:0 0 10px">Quadro de pessoas</h3>
+  <div class="table-wrap" style="margin-bottom:26px"><table>
+    <thead><tr><th>Colaborador</th><th>Área</th><th>Cargo</th><th>Responde a</th><th></th></tr></thead>
+    <tbody>${db.users.slice().sort((a,b)=>a.area.localeCompare(b.area)||b.nivel-a.nivel).map(u => {
+      const g = userById(u.gestorId);
+      return `<tr>
+        <td><strong>${esc(u.nome)}</strong><div class="meta">${esc(u.email)}</div></td>
+        <td>${esc(u.area)}</td><td>${esc(u.cargo)}</td>
+        <td>${g ? esc(g.nome) : "<span class='meta'>—</span>"}</td>
+        <td style="text-align:right"><button class="btn ghost small" onclick="openUserAdmin(${u.id})">Editar</button></td>
+      </tr>`;
+    }).join("")}</tbody></table></div>
+
+  <h3 style="margin:0 0 10px">Manutenção</h3>
+  <div class="card">
+    <p class="sub" style="margin-top:0">Os dados ficam salvos no navegador deste dispositivo. Exporte para levar o conteúdo a outro lugar ou restaure a base de demonstração.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn ghost" onclick="showExport()">Exportar dados</button>
+      <button class="btn danger-btn" onclick="confirmAction('Restaurar base','Isso apaga as publicações, contas e comentários criados e recoloca a base de demonstração.',resetDB)">Restaurar base de demonstração</button>
+    </div>
+    <div id="exportBox" class="hidden" style="margin-top:14px">
+      <textarea id="exportArea" rows="7" readonly></textarea>
+      <button class="btn ghost small" style="margin-top:8px" onclick="copyExport()">Copiar JSON</button>
+    </div>
+  </div>`;
+}
+function showExport(){
+  const box = document.getElementById("exportBox");
+  document.getElementById("exportArea").value = JSON.stringify(db, null, 2);
+  box.classList.remove("hidden");
+}
+function copyExport(){
+  const ta = document.getElementById("exportArea");
+  ta.select();
+  try{ navigator.clipboard.writeText(ta.value); toast("JSON copiado."); }
+  catch(e){ try{ document.execCommand("copy"); toast("JSON copiado."); }catch(_){ toast("Copie manualmente o conteúdo da caixa.","info"); } }
+}
+function saveRolePasswords(e){
+  e.preventDefault();
+  db.rolePasswords[1] = document.getElementById("passLevel1").value;
+  db.rolePasswords[2] = document.getElementById("passLevel2").value;
+  db.rolePasswords[3] = document.getElementById("passLevel3").value;
+  saveDB(); toast("Senhas de cargo salvas.");
+}
+
+function pageSearch(){
+  const q = searchTerm.toLowerCase();
+  const posts = postsVisible(current).filter(p =>
+    (p.title + " " + p.text + " " + p.categoria + " " + (p.tags||[]).join(" ")).toLowerCase().includes(q));
+  const pessoas = db.users.filter(u => (u.nome + " " + u.area + " " + u.cargo + " " + (u.skills||[]).join(" ")).toLowerCase().includes(q));
+  return `<div class="page-title"><div><h2>Resultados para “${esc(searchTerm)}”</h2>
+    <div class="sub">${posts.length} publicações e ${pessoas.length} pessoas.</div></div>
+    <button class="btn ghost" onclick="go('inicio')">Limpar busca</button></div>
+  ${pessoas.length ? `<h3 style="margin:0 0 10px">Pessoas</h3><div class="grid" style="margin-bottom:24px">
+    ${pessoas.slice(0,8).map(u => `<div class="card" style="display:flex;gap:11px;align-items:center;cursor:pointer" onclick="go('perfil:${u.id}')">
+      <div class="avatar">${esc(initials(u.nome))}</div>
+      <div><strong>${esc(u.nome)}</strong><div class="meta">${esc(u.cargo)} · ${esc(u.area)}</div></div></div>`).join("")}
+  </div>` : ""}
+  <h3 style="margin:0 0 10px">Conhecimento</h3>
+  ${feedList(posts.slice(0,20), {titulo:"Nenhuma publicação encontrada",texto:"Tente outra palavra ou procure pela categoria na base de conhecimento."})}`;
+}
+let searchTimer = null;
+function onGlobalSearch(v){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchTerm = v.trim();
+    if(!searchTerm){ render(); return; }
+    document.getElementById("content").innerHTML = pageSearch();
+  }, 180);
+}
+
+/* ===================== Organograma ===================== */
+function pageOrg(){
+  return `<div class="page-title">
+    <div><h2>Organograma</h2><div class="sub">Arraste para mover, use a roda do mouse ou os botões para aproximar. Clique em alguém para abrir o perfil.</div></div>
+    <input type="search" id="orgFind" placeholder="Localizar pessoa" style="width:220px" oninput="highlightOrg(this.value)">
+  </div>
+  <div class="org-viewport" id="orgViewport">
+    <div class="org-hint" id="orgHint">${db.users.length} pessoas · ${AREAS.length} áreas</div>
+    <div class="org-controls">
+      <button class="btn ghost small" onclick="changeZoom(0.15)" title="Aproximar">+</button>
+      <button class="btn ghost small" onclick="changeZoom(-0.15)" title="Afastar">−</button>
+      <button class="btn ghost small" onclick="fitOrg()">Ajustar</button>
+    </div>
+    <div class="org-canvas" id="orgCanvas"><div class="tree">${orgTreeHTML()}</div></div>
+  </div>`;
+}
+function orgTreeHTML(){
+  const roots = db.users.filter(u => !u.gestorId || !userById(u.gestorId));
+  if(!roots.length) return "<div class='empty'>Sem estrutura definida.</div>";
+  return `<ul>${roots.map(r => orgNodeHTML(r, 0)).join("")}</ul>`;
+}
+function orgNodeHTML(u, depth){
+  if(depth > 6) return "";
+  const filhos = db.users.filter(x => x.gestorId === u.id && x.id !== u.id);
+  return `<li>
+    <div class="org-node ${u.id===current.id?"me":""}" data-name="${esc(u.nome.toLowerCase())}" data-id="${u.id}"
+         tabindex="0" onclick="go('perfil:${u.id}')" onkeydown="if(event.key==='Enter')go('perfil:${u.id}')">
+      <div class="node-role">${esc(NIVEL_LONGO[u.nivel])}</div>
+      <div class="node-name">${esc(u.nome)}</div>
+      <div class="node-area">${esc(u.area)}${filhos.length?` · ${filhos.length} liderado${filhos.length>1?"s":""}`:""}</div>
+    </div>
+    ${filhos.length ? `<ul>${filhos.map(f => orgNodeHTML(f, depth+1)).join("")}</ul>` : ""}
+  </li>`;
+}
+let zoom = 1, panX = 0, panY = 0, dragging = false, sx = 0, sy = 0;
+function updateOrgTransform(){
+  const c = document.getElementById("orgCanvas");
+  if(c) c.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+}
+function changeZoom(d){ zoom = Math.min(2.2, Math.max(0.25, zoom + d)); updateOrgTransform(); }
+function fitOrg(){
+  const vp = document.getElementById("orgViewport"), c = document.getElementById("orgCanvas");
+  if(!vp || !c) return;
+  zoom = 1; panX = 0; panY = 0; updateOrgTransform();
+  const w = c.scrollWidth, h = c.scrollHeight;
+  const escala = Math.min(vp.clientWidth / w, vp.clientHeight / h, 1);
+  zoom = Math.max(0.25, escala);
+  panX = (vp.clientWidth - w * zoom) / 2;
+  panY = 14;
+  updateOrgTransform();
+}
+function setupOrgPanZoom(){
+  const vp = document.getElementById("orgViewport");
+  if(!vp) return;
+  const start = (x,y) => { dragging = true; sx = x - panX; sy = y - panY; vp.classList.add("grabbing"); };
+  const move = (x,y) => { if(!dragging) return; panX = x - sx; panY = y - sy; updateOrgTransform(); };
+  const end = () => { dragging = false; vp.classList.remove("grabbing"); };
+
+  vp.addEventListener("pointerdown", e => {
+    if(e.target.closest(".org-controls") || e.target.closest(".org-node")) return;
+    vp.setPointerCapture(e.pointerId); start(e.clientX, e.clientY);
+  });
+  vp.addEventListener("pointermove", e => move(e.clientX, e.clientY));
+  vp.addEventListener("pointerup", end);
+  vp.addEventListener("pointercancel", end);
+  vp.addEventListener("wheel", e => {
+    e.preventDefault();
+    const r = vp.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const antes = zoom;
+    zoom = Math.min(2.2, Math.max(0.25, zoom * (e.deltaY < 0 ? 1.12 : 1/1.12)));
+    panX = mx - (mx - panX) * (zoom / antes);
+    panY = my - (my - panY) * (zoom / antes);
+    updateOrgTransform();
+  }, {passive:false});
+  window.addEventListener("resize", () => { if(route === "estrutura") fitOrg(); });
+}
+function highlightOrg(q){
+  const termo = (q||"").trim().toLowerCase();
+  let achou = null;
+  document.querySelectorAll(".org-node").forEach(n => {
+    const hit = termo && n.dataset.name.includes(termo);
+    n.classList.toggle("hit", !!hit);
+    if(hit && !achou) achou = n;
+  });
+  const hint = document.getElementById("orgHint");
+  if(hint) hint.textContent = termo
+    ? `${document.querySelectorAll(".org-node.hit").length} pessoa(s) encontrada(s)`
+    : `${db.users.length} pessoas · ${AREAS.length} áreas`;
+  if(achou){
+    const vp = document.getElementById("orgViewport");
+    const c = document.getElementById("orgCanvas");
+    const rn = achou.getBoundingClientRect(), rc = c.getBoundingClientRect();
+    const offX = (rn.left - rc.left) / zoom, offY = (rn.top - rc.top) / zoom;
+    panX = vp.clientWidth/2 - (offX + achou.offsetWidth/2) * zoom;
+    panY = vp.clientHeight/2 - (offY + achou.offsetHeight/2) * zoom;
+    updateOrgTransform();
+  }
+}
+
+/* ===================== Ações em publicações ===================== */
+function toggleLike(id){
+  const p = db.posts.find(x => x.id === id); if(!p) return;
+  const i = p.likes.indexOf(current.id);
+  if(i >= 0) p.likes.splice(i,1);
+  else { p.likes.push(current.id); notify(p.user, `${current.nome} reconheceu “${p.title}”.`, p.id); }
+  saveDB(); refreshPostInPlace(p);
+}
+function toggleSave(id){
+  const p = db.posts.find(x => x.id === id); if(!p) return;
+  const i = p.salvos.indexOf(current.id);
+  if(i >= 0){ p.salvos.splice(i,1); toast("Removido dos salvos.","info"); }
+  else { p.salvos.push(current.id); toast("Salvo na sua lista."); }
+  saveDB();
+  if(route === "salvos") render(); else { refreshPostInPlace(p); buildSidebar(); }
+}
+function toggleComments(id){
+  const box = document.getElementById("comments-"+id);
+  if(box) box.classList.toggle("hidden");
+}
+function addComment(e, id){
+  e.preventDefault();
+  const input = e.target.querySelector("input");
+  const txt = input.value.trim(); if(!txt) return;
+  const p = db.posts.find(x => x.id === id); if(!p) return;
+  p.comentarios.push({id:newId(), user:current.id, text:txt, data:new Date().toISOString()});
+  notify(p.user, `${current.nome} comentou em “${p.title}”.`, p.id);
+  saveDB(); input.value = "";
+  refreshPostInPlace(p, true);
+}
+function deleteComment(postId, cid){
+  const p = db.posts.find(x => x.id === postId); if(!p) return;
+  p.comentarios = p.comentarios.filter(c => c.id !== cid);
+  saveDB(); refreshPostInPlace(p, true);
+}
+function refreshPostInPlace(p, openComments){
+  const el = document.getElementById("post-"+p.id);
+  if(!el){ render(); return; }
+  const aberto = openComments || !document.getElementById("comments-"+p.id).classList.contains("hidden");
+  el.outerHTML = postCard(p, {openComments: aberto});
+  refreshNotifBadge();
+}
+function askDeletePost(id){
+  const p = db.posts.find(x => x.id === id); if(!p) return;
+  confirmAction("Excluir publicação", `“${p.title}” sai da Mind junto com os comentários. Não dá para desfazer.`, () => {
+    db.posts = db.posts.filter(x => x.id !== id);
+    saveDB(); toast("Publicação excluída."); render();
+  });
+}
+
+/* ===================== Modais ===================== */
+function openModal(id){ document.getElementById(id).classList.remove("hidden"); }
+function closeModal(id){ document.getElementById(id).classList.add("hidden"); }
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape") document.querySelectorAll(".modal-overlay").forEach(m => m.classList.add("hidden"));
+});
+
+function catsFor(feedId){
+  const f = feedById(feedId);
+  const area = f ? (f.area === "Geral" ? "Geral" : f.area) : current.area;
+  const base = areaCategories[area] || [];
+  const extra = areaCategories[current.area] || [];
+  return [...new Set([...base, ...extra, ...areaCategories["Geral"]])];
+}
+function fillCategorySelect(feedId, selected){
+  const sel = document.getElementById("postCategory");
+  sel.innerHTML = catsFor(feedId).map(c => `<option ${c===selected?"selected":""}>${esc(c)}</option>`).join("");
+}
+function openPostModal(defaultFeedId, editId){
+  const feeds = visibleFeeds(current);
+  if(!feeds.length){ toast("Você ainda não tem feeds disponíveis.","err"); return; }
+  const fs = document.getElementById("postFeedTarget");
+  const editando = editId ? db.posts.find(p => p.id === editId) : null;
+
+  fs.innerHTML = feeds.map(f => `<option value="${f.id}">${esc(f.title)}</option>`).join("");
+  fs.value = editando ? editando.feedId : (defaultFeedId && feeds.some(f=>f.id===defaultFeedId) ? defaultFeedId : feeds[0].id);
+  fs.onchange = () => fillCategorySelect(fs.value, document.getElementById("postCategory").value);
+  fillCategorySelect(fs.value, editando ? editando.categoria : null);
+
+  document.getElementById("postEditId").value = editando ? editando.id : "";
+  document.getElementById("postTitle").value = editando ? editando.title : "";
+  document.getElementById("postText").value = editando ? editando.text : "";
+  document.getElementById("postTags").value = editando ? (editando.tags||[]).join(", ") : "";
+  document.getElementById("postMentions").value = editando ? (editando.mentions||[]).join(", ") : "";
+  document.getElementById("postModalTitle").textContent = editando ? "Editar publicação" : "Compartilhar conhecimento";
+  document.getElementById("postSubmitBtn").textContent = editando ? "Salvar alterações" : "Publicar";
+  document.getElementById("postModalHelp").textContent = editando
+    ? "As alterações aparecem para todo mundo que tem acesso a este feed."
+    : "Escolha o feed com cuidado: ele define quem consegue ler o que você escrever.";
+  openModal("postModal");
+  setTimeout(() => document.getElementById("postTitle").focus(), 50);
+}
+function savePost(e){
+  e.preventDefault();
+  const editId = document.getElementById("postEditId").value;
+  const feedId = document.getElementById("postFeedTarget").value;
+  const dados = {
+    title: document.getElementById("postTitle").value.trim(),
+    text: document.getElementById("postText").value.trim(),
+    categoria: document.getElementById("postCategory").value,
+    feedId,
+    tags: document.getElementById("postTags").value.split(",").map(s => s.trim()).filter(Boolean),
+    mentions: document.getElementById("postMentions").value.split(",").map(s => Number(s.trim())).filter(id => id && userById(id) && id !== current.id)
+  };
+  if(editId){
+    const p = db.posts.find(x => x.id === Number(editId));
+    if(p && canEditPost(p, current)){ Object.assign(p, dados, {editado:true}); toast("Publicação atualizada."); }
+  }else{
+    db.posts.unshift(Object.assign({
+      id:newId(), user:current.id, data:new Date().toISOString(), likes:[], salvos:[], comentarios:[]
+    }, dados));
+    toast("Publicado.");
+  }
+  saveDB(); closeModal("postModal");
+  route = "feed:" + feedId; render();
+}
+
+function openEditProfileModal(){
+  document.getElementById("editBio").value = current.bio || "";
+  document.getElementById("editSkills").value = (current.skills||[]).join(", ");
+  document.getElementById("editPhone").value = current.telefone || "";
+  document.getElementById("editLocal").value = current.local || "";
+  document.getElementById("editNewPass").value = "";
+  openModal("editProfileModal");
+}
+function saveProfile(e){
+  e.preventDefault();
+  current.bio = document.getElementById("editBio").value.trim();
+  current.skills = document.getElementById("editSkills").value.split(",").map(s => s.trim()).filter(Boolean);
+  current.telefone = document.getElementById("editPhone").value.trim();
+  current.local = document.getElementById("editLocal").value.trim();
+  const np = document.getElementById("editNewPass").value;
+  if(np){ current.senha = np; }
+  saveDB(); closeModal("editProfileModal"); toast("Perfil salvo.");
+  route = "perfil:" + current.id; render();
+}
+
+function openUserAdmin(id){
+  const u = userById(id); if(!u || current.nivel < 3) return;
+  document.getElementById("adminUserId").value = u.id;
+  document.getElementById("userAdminTitle").textContent = u.nome;
+  document.getElementById("adminArea").innerHTML = AREAS.map(a => `<option ${a===u.area?"selected":""}>${esc(a)}</option>`).join("");
+  document.getElementById("adminNivel").value = String(u.nivel);
+  document.getElementById("adminGestor").innerHTML =
+    `<option value="">Definir automaticamente pela área e cargo</option>` +
+    db.users.filter(x => x.id !== u.id).map(x => `<option value="${x.id}" ${x.id===u.gestorId&&u.gestorManual?"selected":""}>${esc(x.nome)} — ${esc(x.cargo)} · ${esc(x.area)}</option>`).join("");
+  openModal("userAdminModal");
+}
+function saveUserAdmin(e){
+  e.preventDefault();
+  const u = userById(Number(document.getElementById("adminUserId").value)); if(!u) return;
+  u.area = document.getElementById("adminArea").value;
+  u.nivel = Number(document.getElementById("adminNivel").value);
+  u.cargo = NIVEL_NOME[u.nivel];
+  const g = document.getElementById("adminGestor").value;
+  if(g){ u.gestorId = Number(g); u.gestorManual = true; } else { u.gestorManual = false; }
+  recomputeHierarchy(db.users);
+  saveDB(); closeModal("userAdminModal"); toast("Cadastro atualizado.");
+  if(u.id === current.id) startSession(u); else render();
+}
+function removeUserFromAdmin(){
+  const id = Number(document.getElementById("adminUserId").value);
+  const u = userById(id); if(!u) return;
+  if(u.id === current.id){ toast("Você não pode remover a própria conta.","err"); return; }
+  closeModal("userAdminModal");
+  confirmAction("Remover colaborador", `${u.nome} perde o acesso. As publicações continuam registradas, sem autor ativo.`, () => {
+    db.users = db.users.filter(x => x.id !== id);
+    recomputeHierarchy(db.users);
+    saveDB(); toast("Colaborador removido."); route = "pessoas"; render();
+  });
+}
+
+/* ===================== Tema e boot ===================== */
+function applyTheme(t){
+  if(t) document.documentElement.setAttribute("data-theme", t);
+  else document.documentElement.removeAttribute("data-theme");
+}
+function toggleTheme(){
+  const atual = document.documentElement.getAttribute("data-theme");
+  const escuro = atual ? atual === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const novo = escuro ? "light" : "dark";
+  applyTheme(novo);
+  try{ localStorage.setItem(THEME, novo); }catch(e){}
+}
+(function boot(){
+  try{ const t = localStorage.getItem(THEME); if(t) applyTheme(t); }catch(e){}
+  db = loadDB();
+  saveDB();
+  fillUsersSelect();
+  let sess = null;
+  try{ sess = localStorage.getItem(SESSION); }catch(e){}
+  const u = sess ? userById(Number(sess)) : null;
+  if(u) startSession(u);
+})();
+
+</script>
+</body>
+</html>

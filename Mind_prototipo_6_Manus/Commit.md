@@ -1,0 +1,1 @@
+A última versão mantém os mesmos 100 usuários e 123 posts, mas agora todos os textos foram reescritos em primeira pessoa, como se cada colaborador estivesse contando a própria experiência, além de incluir marcações de pessoas e a seção “Posts marcados” no perfil. Também atualizei a seed para converter os posts antigos e adicionar os novos sem duplicá-los.

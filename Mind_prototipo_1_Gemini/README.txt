@@ -1,7 +1,5 @@
 # Mind — Protótipo funcional
 
-Abra `index.html` no navegador.
-
 O protótipo simula:
 - login com diferentes usuários;
 - níveis Consultor, Gestor e Líder;
