@@ -1,0 +1,52 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {setTimeout as delay} from 'node:timers/promises';
+import {graph} from '../server/domain.mjs';
+test('ciclos e pais inexistentes são recusados',()=>{assert.throws(()=>graph([{id:'a',parent_id:'b'},{id:'b',parent_id:'a'}]),/ciclo/);assert.throws(()=>graph([{id:'a',parent_id:'x'}]),/inexistente/);});
+test('fluxo completo com persistência, permissões, cadastro e isolamento',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'mind-test-')),port=3458,origin=`http://localhost:${port}`;
+ const env={...process.env,PORT:String(port),HOST:'127.0.0.1',APP_ORIGIN:origin,SQLITE_PATH:join(dir,'test.sqlite'),DB_PROVIDER:'sqlite',ADMIN_EMAIL:'admin@test.local',ADMIN_PASSWORD:'senha-teste-segura'};
+ let processChild;
+ async function start(){processChild=spawn(process.execPath,['server/index.mjs'],{cwd:new URL('..',import.meta.url),env,stdio:'pipe'});for(let i=0;i<100;i++){try{await fetch(origin+'/api/catalog');return;}catch{await delay(50);}}throw Error('Servidor não iniciou');}
+ async function stop(){if(processChild&&!processChild.killed){processChild.kill();await new Promise(r=>processChild.once('exit',r));}}
+ t.after(async()=>{await stop();await rm(dir,{recursive:true,force:true});});await start();
+ const client=()=>({cookie:'',async call(path,data,status=200){const r=await fetch(origin+'/api/'+path,{method:data?'POST':'GET',headers:{origin,'Content-Type':'application/json',cookie:this.cookie},body:data?JSON.stringify(data):undefined});if(r.headers.get('set-cookie'))this.cookie=r.headers.get('set-cookie').split(';')[0];const result=await r.json();assert.equal(r.status,status,JSON.stringify(result));return result;}});
+ const admin=client(),guest=client(),employee=client();
+ await guest.call('register',{name:'Teste'},400);
+ await admin.call('login',{email:'admin@test.local',password:env.ADMIN_PASSWORD,admin:true});
+ let s=await admin.call('state');
+ async function structure(d,status=200){await admin.call('admin/structure',{operator:'Responsável QA',revision:s.company.revision,...d},status);s=await admin.call('state');}
+ async function stage(value,status=200){await admin.call('admin/stage',{operator:'QA',name:'Empresa QA',stage:value,revision:s.company.revision},status);s=await admin.call('state');}
+ await stage('roles',400);
+ await structure({kind:'area',name:'Executiva',x:60,y:40});const exec=s.areas[0];
+ await structure({kind:'area',name:'Comercial',parent_id:exec.id,x:60,y:210});const commercial=s.areas.find(a=>a.name==='Comercial');
+ await structure({kind:'area',...exec,parent_id:commercial.id},400);
+ await structure({kind:'area',name:'Duplicada',revision:0},409);
+ await stage('roles');await stage('open',400);
+ await structure({kind:'position',name:'Diretor',area_id:exec.id,x:100,y:80});const director=s.positions[0];
+ await structure({kind:'position',name:'Consultor',area_id:commercial.id,parent_id:director.id,x:100,y:250});const consultant=s.positions.find(p=>p.name==='Consultor');
+ await stage('open');
+ await guest.call('register',{name:'Colaborador',email:'user@test.local',password:'senha-colaborador',position_id:consultant.id});
+ await employee.call('login',{email:'user@test.local',password:'senha-colaborador'});await employee.call('state',undefined,403);
+ s=await admin.call('state');const member=s.people[0];
+ await admin.call('admin/member',{id:member.id,status:'active',position_id:consultant.id,operator:'QA'});
+ await employee.call('state');await employee.call('admin/stage',{stage:'areas'},403);
+ await employee.call('posts',{title:'Privado',body:'Sem acesso',category:'Teste',area_id:exec.id},403);
+ await admin.call('posts',{title:'Restrito',body:'Somente executiva',category:'Teste',area_id:exec.id});s=await admin.call('state');const hidden=s.posts[0];
+ assert.equal((await employee.call('state')).posts.length,0);
+ await employee.call('post/action',{id:hidden.id,action:'like'},404);
+ await employee.call('posts',{title:'Aprendizado',body:'Conteúdo persistente',category:'Processos',area_id:commercial.id});
+ let es=await employee.call('state');const post=es.posts[0];
+ await admin.call('post/action',{id:post.id,action:'comment',body:'Excelente registro'});
+ await employee.call('post/action',{id:post.id,action:'like'});
+ es=await employee.call('state');assert.equal(es.comments.length,1);assert.equal(es.notifications.length,1);
+ await employee.call('post/action',{id:post.id,action:'delete-comment',comment_id:es.comments[0].id},403);
+ s=await admin.call('state');await structure({kind:'position',...consultant,remove:true},409);
+ const admin2=client();await admin2.call('login',{email:'admin@test.local',password:env.ADMIN_PASSWORD,admin:true});await admin.call('state',undefined,401);
+ await stop();await start();assert.equal((await employee.call('state')).posts[0].title,'Aprendizado');
+ const csrf=await fetch(origin+'/api/logout',{method:'POST',headers:{origin:'http://outro.site','Content-Type':'application/json'},body:'{}'});assert.equal(csrf.status,403);
+});
