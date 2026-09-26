@@ -1,0 +1,1 @@
+Conhecimento é o que a pessoa sabe e seleciona; conceito é a identidade única desse conhecimento que permite à MIND entender relações, eliminar duplicidades e fazer os cálculos de inteligência.
