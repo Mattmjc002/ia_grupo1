@@ -1,0 +1,18 @@
+{
+  "name": "mind-organizacao",
+  "version": "1.1.0-orion.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env scripts/start-orion.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "start:mind": "node --env-file-if-exists=.env server/index.mjs",
+    "demo:gerar": "node scripts/seed-orion.mjs"
+  },
+  "optionalDependencies": {
+    "pg": "^8.16.3"
+  }
+}

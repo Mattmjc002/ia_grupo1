@@ -1,0 +1,73 @@
+﻿Nome;E-mail de demonstração;Área;Cargo;Nível;Situação
+Administração Orion;admin@orion.example;Administração;Administrador;admin;active
+Alice Moreira;alice.moreira@orion.example;Comercial e Parcerias;Executiva de contas estratégicas;consultoria;active
+Clara Batista;clara.batista@orion.example;Comercial e Parcerias;Analista de operações comerciais;consultoria;active
+Gustavo Peixoto;gustavo.peixoto@orion.example;Comercial e Parcerias;Analista de parcerias;consultoria;active
+João Brandão;joao.brandao@orion.example;Comercial e Parcerias;Head Comercial e Parcerias;lideranca;active
+Renê Vilar;rene.vilar@orion.example;Comercial e Parcerias;Analista de parcerias;consultoria;blocked
+Vinícius Correia;vinicius.correia@orion.example;Comercial e Parcerias;Consultor de soluções;consultoria;active
+Amanda Lopes;amanda.lopes@orion.example;Dados e Inteligência;Analista de experimentação;consultoria;active
+Gabriel Rocha;gabriel.rocha@orion.example;Dados e Inteligência;Cientista de dados;consultoria;active
+Renata Campos;renata.campos@orion.example;Dados e Inteligência;Engenheira de dados;consultoria;active
+Sofia Almeida;sofia.almeida@orion.example;Dados e Inteligência;Head de Dados e Inteligência;lideranca;active
+Vitor Neves;vitor.neves@orion.example;Dados e Inteligência;Analista de business intelligence;consultoria;active
+André Valença;andre.valenca@orion.example;Direção e Estratégia;Diretor de operações;lideranca;active
+Caio Lemos;caio.lemos@orion.example;Direção e Estratégia;Coordenador de estratégia e PMO;gestao;active
+Helena Duarte;helena.duarte@orion.example;Direção e Estratégia;Diretora executiva;lideranca;active
+Marina Costa;marina.costa@orion.example;Direção e Estratégia;Diretora de produto e tecnologia;lideranca;active
+Ana Ribeiro;ana.ribeiro@orion.example;Experiência do Cliente;Head de Experiência do Cliente;lideranca;active
+Bianca Ramos;bianca.ramos@orion.example;Experiência do Cliente;Analista de voz do cliente;consultoria;active
+César Cunha;cesar.cunha@orion.example;Experiência do Cliente;Analista de suporte;consultoria;active
+Mariana Luz;mariana.luz@orion.example;Experiência do Cliente;Analista de sucesso do cliente;consultoria;active
+Mirela Abreu;mirela.abreu@orion.example;Experiência do Cliente;Analista de voz do cliente;consultoria;pending
+Paulo Dantas;paulo.dantas@orion.example;Experiência do Cliente;Coordenador de implantação;gestao;active
+Fábio Cavalcanti;fabio.cavalcanti@orion.example;Finanças e Controladoria;Controller;gestao;active
+Letícia Cardoso;leticia.cardoso@orion.example;Finanças e Controladoria;Analista de planejamento financeiro;consultoria;active
+Marcelo Pacheco;marcelo.pacheco@orion.example;Finanças e Controladoria;Head de Finanças e Controladoria;lideranca;active
+Tainá Rezende;taina.rezende@orion.example;Finanças e Controladoria;Analista de tesouraria;consultoria;active
+Melissa Pinto;melissa.pinto@orion.example;Governança e Privacidade;Analista de governança de dados;consultoria;active
+Roberto Maia;roberto.maia@orion.example;Governança e Privacidade;Analista de contratos;consultoria;active
+Vanessa Falcão;vanessa.falcao@orion.example;Governança e Privacidade;Head de Governança e Privacidade;lideranca;active
+Fernanda Dias;fernanda.dias@orion.example;Logística e Suprimentos;Coordenadora de planejamento logístico;gestao;active
+Igor Teixeira;igor.teixeira@orion.example;Logística e Suprimentos;Analista de estoques;consultoria;active
+Laura Queiroz;laura.queiroz@orion.example;Logística e Suprimentos;Analista de distribuição;consultoria;active
+Nicolas Ramos;nicolas.ramos@orion.example;Logística e Suprimentos;Analista de estoques;consultoria;pending
+Otávio Lima;otavio.lima@orion.example;Logística e Suprimentos;Analista de suprimentos;consultoria;active
+Ricardo Sales;ricardo.sales@orion.example;Logística e Suprimentos;Head de Logística e Suprimentos;lideranca;active
+Bruna Amaral;bruna.amaral@orion.example;Marketing e Comunicação;Head de Marketing e Comunicação;lideranca;active
+Cecília Prado;cecilia.prado@orion.example;Marketing e Comunicação;Analista de geração de demanda;consultoria;active
+Hugo Fernandes;hugo.fernandes@orion.example;Marketing e Comunicação;Designer de comunicação;consultoria;active
+Leandro Paiva;leandro.paiva@orion.example;Marketing e Comunicação;Analista de conteúdo;consultoria;active
+Daniel Carvalho;daniel.carvalho@orion.example;Operações e Processos;Engenheiro de processos;consultoria;active
+Elisa Martins;elisa.martins@orion.example;Operações e Processos;Coordenadora de processos;gestao;active
+Henrique Nunes;henrique.nunes@orion.example;Operações e Processos;Especialista em continuidade;consultoria;active
+Lucas Farias;lucas.farias@orion.example;Operações e Processos;Analista de capacidade;consultoria;active
+Mateus Ribeiro;mateus.ribeiro@orion.example;Operações e Processos;Head de Operações;lideranca;active
+Natália Moraes;natalia.moraes@orion.example;Operações e Processos;Analista de operações;consultoria;active
+Priscila Gomes;priscila.gomes@orion.example;Operações e Processos;Analista de automação operacional;consultoria;active
+Artur Bezerra;artur.bezerra@orion.example;Pesquisa e Sustentabilidade;Pesquisador de soluções;consultoria;active
+Davi Albuquerque;davi.albuquerque@orion.example;Pesquisa e Sustentabilidade;Analista de pesquisa aplicada;consultoria;active
+Estela Moura;estela.moura@orion.example;Pesquisa e Sustentabilidade;Head de Pesquisa e Sustentabilidade;lideranca;active
+Yasmin Coelho;yasmin.coelho@orion.example;Pesquisa e Sustentabilidade;Analista de sustentabilidade;consultoria;active
+Aline Guimarães;aline.guimaraes@orion.example;Pessoas e Conhecimento;Analista de desenvolvimento;consultoria;active
+Débora Castro;debora.castro@orion.example;Pessoas e Conhecimento;Curadora de conhecimento;consultoria;active
+Laura Nogueira;laura.nogueira@orion.example;Pessoas e Conhecimento;Head de Pessoas e Conhecimento;lideranca;active
+Rodrigo Assis;rodrigo.assis@orion.example;Pessoas e Conhecimento;Analista de pessoas;consultoria;active
+Beatriz Azevedo;beatriz.azevedo@orion.example;Produto e Design;Designer de experiência;consultoria;active
+Isadora Freire;isadora.freire@orion.example;Produto e Design;Product designer;consultoria;active
+Lívia Monteiro;livia.monteiro@orion.example;Produto e Design;Head de Produto e Design;lideranca;active
+Pedro Alcântara;pedro.alcantara@orion.example;Produto e Design;Analista de produto;consultoria;active
+Rafael Mendes;rafael.mendes@orion.example;Produto e Design;Product manager;consultoria;active
+Sabrina Leal;sabrina.leal@orion.example;Produto e Design;Analista de produto;consultoria;pending
+Carolina Reis;carolina.reis@orion.example;Qualidade e Melhoria;Analista de qualidade;consultoria;active
+Eduardo Tavares;eduardo.tavares@orion.example;Qualidade e Melhoria;Especialista em melhoria contínua;consultoria;active
+Patrícia Vieira;patricia.vieira@orion.example;Qualidade e Melhoria;Head de Qualidade e Melhoria;lideranca;active
+Samuel Melo;samuel.melo@orion.example;Qualidade e Melhoria;Analista de indicadores da qualidade;consultoria;active
+Bruno Siqueira;bruno.siqueira@orion.example;Tecnologia e Plataforma;Engenheiro de integrações sênior;consultoria;active
+Camila Torres;camila.torres@orion.example;Tecnologia e Plataforma;Head de Engenharia de Software;lideranca;active
+Diego Matos;diego.matos@orion.example;Tecnologia e Plataforma;Desenvolvedor de automações;consultoria;active
+Enzo Santiago;enzo.santiago@orion.example;Tecnologia e Plataforma;Desenvolvedor de automações;consultoria;pending
+Felipe Andrade;felipe.andrade@orion.example;Tecnologia e Plataforma;Engenheiro de qualidade de software;consultoria;active
+Júlia Nascimento;julia.nascimento@orion.example;Tecnologia e Plataforma;Desenvolvedora back-end;consultoria;active
+Luana Pires;luana.pires@orion.example;Tecnologia e Plataforma;Engenheira de plataforma;consultoria;active
+Tiago Barros;tiago.barros@orion.example;Tecnologia e Plataforma;Desenvolvedor front-end;consultoria;active
