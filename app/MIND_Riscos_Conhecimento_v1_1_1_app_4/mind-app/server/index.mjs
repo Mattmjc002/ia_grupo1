@@ -1,0 +1,231 @@
+import http from 'node:http';
+import {readFile} from 'node:fs/promises';
+import {randomBytes} from 'node:crypto';
+import {openDatabase} from './database.mjs';
+import {id,now,fail,text,password,hash,verify,digest,graph,canRead} from './domain.mjs';
+import {KNOWLEDGE_CATALOG,knowledgeId} from './knowledge-catalog.mjs';
+import {dashboardData} from './dashboard.mjs';
+import {syncKnowledgeIntelligence,knowledgeIntelligenceData,buildKnowledgeIntelligence,simulateKnowledgeExit} from './knowledge-intelligence.mjs';
+const db=await openDatabase();
+await db.transaction(async tx=>{
+ if(!(await tx.all('SELECT id FROM company')).length)await tx.all("INSERT INTO company(id,name,stage) VALUES('main','Minha empresa','areas')");
+ if(!(await tx.all('SELECT id FROM users WHERE is_admin=1')).length){
+  const p=process.env.ADMIN_PASSWORD;if(!p||p==='troque-por-uma-senha-longa')throw Error('Configure ADMIN_PASSWORD no .env antes de iniciar.');
+  await tx.all('INSERT INTO users(id,name,email,password_hash,is_admin,status,created_at) VALUES(?,?,?,?,1,?,?)',[id(),'Administrador',(process.env.ADMIN_EMAIL||'admin@mind.local').trim().toLowerCase(),hash(password(p)),'active',now()]);
+ }
+ for(const area of KNOWLEDGE_CATALOG){
+  const areaId=`mind-area-${area.id}`;
+  await tx.all('INSERT INTO knowledge_areas(id,name) VALUES(?,?) ON CONFLICT DO NOTHING',[areaId,area.name]);
+  for(const name of area.items)await tx.all("INSERT INTO knowledge_items(id,area_id,name,source,created_at) VALUES(?,?,?,'catalog',?) ON CONFLICT DO NOTHING",[knowledgeId(area.id,name),areaId,name,now()]);
+ }
+ await syncKnowledgeIntelligence(tx);
+});
+const port=Number(process.env.PORT||3000),origin=process.env.APP_ORIGIN||`http://localhost:${port}`;
+const cookie=(token='',age=0)=>`mind_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${process.env.COOKIE_SECURE==='true'?'; Secure':''}`;
+const attempts=new Map();
+function throttle(req){const key=req.socket.remoteAddress;const t=Date.now();let bucket=attempts.get(key);if(!bucket||t>bucket.until){bucket={n:0,until:t+600000};attempts.set(key,bucket);}if(++bucket.n>30)fail('Muitas tentativas. Aguarde 10 minutos.',429);}
+setInterval(()=>{for(const [k,v]of attempts)if(v.until<Date.now())attempts.delete(k);},60000).unref();
+const clean=u=>{const {password_hash,...rest}=u;return rest;};
+async function audit(tx,actor,action){await tx.all('INSERT INTO audit(id,actor,action,created_at) VALUES(?,?,?,?)',[id(),actor,action,now()]);}
+async function api(req,res,path,b){
+ return db.transaction(async tx=>{
+ const token=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('mind_session='))?.slice(13);
+ const user=token?(await tx.all('SELECT u.*,p.area_id,p.level AS position_level FROM sessions s JOIN users u ON u.id=s.user_id LEFT JOIN positions p ON p.id=u.position_id WHERE s.token_hash=? AND s.expires_at>?',[digest(token),now()]))[0]:null;
+ const company=(await tx.all('SELECT * FROM company'))[0];
+ const admin=()=>{if(!user||!user.is_admin||user.status!=='active')fail('Acesso administrativo necessário.',403);};
+ const active=()=>{if(!user)fail('Entre na sua conta.',401);if(user.status!=='active')fail('Seu cadastro aguarda aprovação ou está bloqueado.',403);};
+ const structure=async()=>({company,areas:await tx.all('SELECT * FROM areas ORDER BY name'),positions:await tx.all('SELECT * FROM positions ORDER BY name')});
+ if(path==='/api/catalog'&&req.method==='GET')return company.stage==='open'?await structure():{company,areas:[],positions:[]};
+ if(path==='/api/me'&&req.method==='GET')return{user:user?clean(user):null};
+ if(path==='/api/login'&&req.method==='POST'){
+  throttle(req);const email=text(b.email,'E-mail',254).toLowerCase();
+  if(typeof b.password!=='string'||!b.password.length||b.password.length>128)fail('Informe a senha com até 128 caracteres.');
+  const p=b.password;
+  const found=(await tx.all('SELECT * FROM users WHERE email=?',[email]))[0];
+  if(!found||!verify(p,found.password_hash))fail('E-mail ou senha incorretos.',401);
+  if(b.admin&&!found.is_admin)fail('Esta conta não é administradora.',403);
+  if(found.status==='blocked')fail('Conta bloqueada. Procure o responsável.',403);
+  const session=randomBytes(32).toString('hex');
+  await tx.all('DELETE FROM sessions WHERE expires_at<?',[now()]);
+  if(found.is_admin)await tx.all('DELETE FROM sessions WHERE user_id=?',[found.id]);
+  await tx.all('INSERT INTO sessions VALUES(?,?,?)',[digest(session),found.id,new Date(Date.now()+28800000).toISOString()]);
+  res.setHeader('Set-Cookie',cookie(session,28800));return{user:clean(found)};
+ }
+ if(path==='/api/logout'&&req.method==='POST'){if(token)await tx.all('DELETE FROM sessions WHERE token_hash=?',[digest(token)]);res.setHeader('Set-Cookie',cookie());return{ok:true};}
+ if(path==='/api/register'&&req.method==='POST'){
+  throttle(req);if(company.stage!=='open')fail('O cadastro será liberado após a configuração da empresa.');
+  const name=text(b.name,'Nome'),email=text(b.email,'E-mail',254).toLowerCase(),p=password(b.password);
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))fail('Informe um e-mail válido.');
+  if(!(await tx.all('SELECT id FROM positions WHERE id=?',[b.position_id||''])).length)fail('Escolha um cargo válido.');
+  if((await tx.all('SELECT id FROM users WHERE email=?',[email])).length)fail('Já existe uma conta com esse e-mail.',409);
+  await tx.all('INSERT INTO users(id,name,email,password_hash,position_id,status,created_at) VALUES(?,?,?,?,?,?,?)',[id(),name,email,hash(p),b.position_id,'pending',now()]);return{ok:true};
+ }
+ if(path==='/api/state'&&req.method==='GET'){
+  active();const data=await structure();data.user=clean(user);
+  data.people=await tx.all(`SELECT u.id,u.name,u.bio,u.position_id,u.status,p.area_id FROM users u LEFT JOIN positions p ON p.id=u.position_id WHERE u.is_admin=0${user.is_admin?'':" AND u.status='active'"}`);
+  data.posts=(await tx.all("SELECT p.*,u.name AS author FROM posts p JOIN users u ON u.id=p.user_id WHERE u.status='active' ORDER BY p.created_at DESC")).filter(p=>canRead(user,p));
+  const ids=new Set(data.posts.map(p=>p.id));data.comments=(await tx.all('SELECT c.*,u.name AS author FROM comments c JOIN users u ON u.id=c.user_id ORDER BY c.created_at')).filter(c=>ids.has(c.post_id));
+  data.reactions=(await tx.all('SELECT * FROM reactions')).filter(r=>ids.has(r.post_id)&&(r.kind==='like'||r.user_id===user.id));
+  data.knowledgeAreas=await tx.all('SELECT * FROM knowledge_areas ORDER BY name');
+  data.knowledgeItems=await tx.all('SELECT * FROM knowledge_items ORDER BY name');
+  const knowledgeDetails=await tx.all('SELECT * FROM knowledge_details');
+  for(const item of data.knowledgeItems){const detail=knowledgeDetails.find(d=>d.knowledge_id===item.id);if(detail){item.description=detail.description;item.examples=detail.examples;}}
+  const profileIds=new Set([...data.people.map(p=>p.id),user.id]);
+  data.userKnowledge=(await tx.all('SELECT * FROM user_knowledge')).filter(k=>profileIds.has(k.user_id));
+  data.guide=(await tx.all("SELECT * FROM company_guide WHERE id='main'"))[0]||{body:'',revision:0,updated_at:null,updated_by:''};
+  data.postKnowledge=(await tx.all('SELECT pk.post_id,ki.id AS knowledge_id,ki.name,ki.area_id,ka.name AS area_name FROM post_knowledge pk JOIN knowledge_items ki ON ki.id=pk.knowledge_id JOIN knowledge_areas ka ON ka.id=ki.area_id')).filter(k=>ids.has(k.post_id));
+  data.notifications=await tx.all('SELECT * FROM notifications WHERE user_id=? ORDER BY created_at DESC',[user.id]);
+  if(user.is_admin)data.audit=await tx.all('SELECT * FROM audit ORDER BY created_at DESC LIMIT 40');return data;
+ }
+ if(path==='/api/knowledge/network'&&req.method==='GET'){
+  active();const raw=await knowledgeIntelligenceData(tx);
+  raw.posts=raw.posts.filter(p=>canRead(user,p));
+  return buildKnowledgeIntelligence(raw);
+ }
+ if(path==='/api/admin/knowledge/simulate'&&req.method==='GET'){
+  admin();const target=new URL(req.url,'http://localhost').searchParams.get('id')||'';
+  const raw=await knowledgeIntelligenceData(tx),result=simulateKnowledgeExit(raw,target);if(!result)fail('Colaborador não encontrado.',404);return result;
+ }
+ if(path==='/api/admin/dashboard'&&req.method==='GET'){
+  admin();return dashboardData(tx,new URL(req.url,'http://localhost').searchParams);
+ }
+ if(path==='/api/admin/guide'&&req.method==='POST'){
+  admin();const actor=text(b.operator,'Responsável');
+  if(typeof b.body!=='string'||b.body.length>8000)fail('Escreva até 8.000 caracteres.');
+  const current=(await tx.all("SELECT revision FROM company_guide WHERE id='main'"))[0];
+  if(b.revision!==(current?.revision||0))fail('O guia mudou. Atualize a página antes de salvar.',409);
+  await tx.all("INSERT INTO company_guide(id,body,revision,updated_at,updated_by) VALUES('main',?,?,?,?) ON CONFLICT(id) DO UPDATE SET body=excluded.body,revision=excluded.revision,updated_at=excluded.updated_at,updated_by=excluded.updated_by",[b.body.trim(),(current?.revision||0)+1,now(),actor]);
+  await audit(tx,actor,'Atualizou o Guia da MIND');return{ok:true};
+ }
+ if(path==='/api/admin/structure'&&req.method==='POST'){
+  admin();if(b.revision!==company.revision)fail('A estrutura mudou em outra sessão. Recarregue antes de salvar.',409);
+  const actor=text(b.operator,'Responsável pela alteração');
+  if(!['area','position'].includes(b.kind))fail('Tipo inválido.');const table=b.kind==='area'?'areas':'positions';
+  const rows=await tx.all(`SELECT * FROM ${table}`),existing=rows.find(r=>r.id===b.id);
+  if(b.remove){if(!existing)fail('Item não encontrado.',404);await tx.all(`DELETE FROM ${table} WHERE id=?`,[b.id]);}
+  else{
+   const row={id:existing?.id||id(),name:text(b.name,'Nome'),parent_id:b.parent_id||null,x:Number(b.x??existing?.x??80),y:Number(b.y??existing?.y??80)};
+   if(!Number.isFinite(row.x)||!Number.isFinite(row.y)||row.x<0||row.y<0||row.x>5000||row.y>5000)fail('Posição fora do quadro.');
+   graph([...rows.filter(r=>r.id!==row.id),row]);
+   if(table==='positions'){
+    if(company.stage==='areas')fail('Conclua primeiro a etapa de áreas.');
+    row.area_id=b.area_id;
+    if(!(await tx.all('SELECT id FROM areas WHERE id=?',[row.area_id||''])).length)fail('Selecione uma área.');
+    if(existing&&existing.area_id!==row.area_id&&(await tx.all('SELECT id FROM users WHERE position_id=?',[existing.id])).length)fail('Esse cargo possui colaboradores. Realoque-os antes de mudar a área.');
+   }
+   if(table==='positions'){row.level=b.level||existing?.level||'consultoria';if(!['lideranca','gestao','consultoria'].includes(row.level))fail('Selecione o nível do cargo.');}
+   const keys=table==='areas'?['name','parent_id','x','y']:['name','parent_id','x','y','area_id','level'];
+   if(existing)await tx.all(`UPDATE ${table} SET ${keys.map(k=>k+'=?').join(',')} WHERE id=?`,[...keys.map(k=>row[k]),row.id]);
+   else await tx.all(`INSERT INTO ${table}(id,${keys.join(',')}) VALUES(${keys.map(()=>'?').join(',')},?)`,[row.id,...keys.map(k=>row[k])]);
+  }
+  await tx.all('UPDATE company SET revision=revision+1');await audit(tx,actor,`${b.remove?'Removeu':'Salvou'} ${b.kind==='area'?'área':'cargo'}: ${b.name||existing?.name}`);return{ok:true};
+ }
+ if(path==='/api/admin/stage'&&req.method==='POST'){
+  admin();const actor=text(b.operator,'Responsável');if(!['areas','roles','open'].includes(b.stage))fail('Etapa inválida.');
+  if(b.revision!==company.revision)fail('A estrutura mudou. Recarregue.',409);
+  const areas=await tx.all('SELECT * FROM areas'),positions=await tx.all('SELECT * FROM positions');
+  if(b.stage!=='areas'&&!areas.length)fail('Crie pelo menos uma área.');
+  if(b.stage==='open'&&areas.some(a=>!positions.some(p=>p.area_id===a.id)))fail('Toda área precisa ter pelo menos um cargo antes de abrir os cadastros.');
+  await tx.all('UPDATE company SET name=?,stage=?,revision=revision+1',[text(b.name,'Nome da empresa'),b.stage]);await audit(tx,actor,`Etapa alterada para ${b.stage}`);return{ok:true};
+ }
+ if(path==='/api/admin/member'&&req.method==='POST'){
+  admin();const actor=text(b.operator,'Responsável');if(!['active','pending','blocked'].includes(b.status))fail('Status inválido.');
+  const member=(await tx.all('SELECT * FROM users WHERE id=? AND is_admin=0',[b.id]))[0];if(!member)fail('Colaborador não encontrado.',404);
+  if(!(await tx.all('SELECT id FROM positions WHERE id=?',[b.position_id||''])).length)fail('Cargo inválido.');
+  await tx.all('UPDATE users SET status=?,position_id=? WHERE id=?',[b.status,b.position_id,b.id]);await audit(tx,actor,`${b.status}: ${member.name}`);return{ok:true};
+ }
+active();
+ if(path==='/api/knowledge'&&req.method==='POST'){
+  const areaId=text(b.area_id,'Área',100),name=text(b.name,'Conhecimento',100);
+  if(!(await tx.all('SELECT id FROM knowledge_areas WHERE id=?',[areaId])).length)fail('Escolha uma área de conhecimento válida.');
+  const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+  const items=await tx.all('SELECT * FROM knowledge_items WHERE area_id=?',[areaId]);
+  const existing=items.find(item=>normalize(item.name)===normalize(name));
+  if(existing)return{item:existing,created:false};
+  const item={id:id(),area_id:areaId,name,source:'community',created_by:user.id,created_at:now()};
+  await tx.all('INSERT INTO knowledge_items(id,area_id,name,source,created_by,created_at) VALUES(?,?,?,?,?,?)',[item.id,item.area_id,item.name,item.source,item.created_by,item.created_at]);
+  const description=String(b.description||'').trim(),examples=String(b.examples||'').trim();
+  if(description.length>2000||examples.length>3000)fail('Descrição: até 2.000 caracteres. Exemplos: até 3.000.');
+  if(description||examples){await tx.all('INSERT INTO knowledge_details(knowledge_id,description,examples) VALUES(?,?,?)',[item.id,description,examples]);item.description=description;item.examples=examples;}
+  await syncKnowledgeIntelligence(tx,{force:true});
+  return{item,created:true};
+ }
+ if(path==='/api/knowledge/details'&&req.method==='POST'){
+  const item=(await tx.all('SELECT * FROM knowledge_items WHERE id=?',[b.id||'']))[0];
+  if(!item)fail('Conhecimento não encontrado.',404);
+  if(!user.is_admin&&item.created_by!==user.id)fail('Apenas quem cadastrou ou a administração pode editar esta descrição.',403);
+  const description=text(b.description,'Descrição',2000),examples=text(b.examples,'Exemplos práticos',3000);
+  await tx.all('INSERT INTO knowledge_details(knowledge_id,description,examples) VALUES(?,?,?) ON CONFLICT(knowledge_id) DO UPDATE SET description=excluded.description,examples=excluded.examples',[item.id,description,examples]);
+  return{ok:true};
+ }
+ if(path==='/api/profile'&&req.method==='POST'){
+  if(b.knowledge_ids!==undefined){
+   if(!Array.isArray(b.knowledge_ids)||b.knowledge_ids.some(k=>typeof k!=='string'))fail('Selecione conhecimentos válidos.');
+   const ids=[...new Set(b.knowledge_ids)];if(ids.length>50)fail('Escolha até 50 conhecimentos para o perfil.');
+   if(ids.length&&(await tx.all(`SELECT id FROM knowledge_items WHERE id IN (${ids.map(()=>'?').join(',')})`,ids)).length!==ids.length)fail('Conhecimento não encontrado.');
+   await tx.all('DELETE FROM user_knowledge WHERE user_id=?',[user.id]);
+   for(const knowledgeId of ids)await tx.all('INSERT INTO user_knowledge(user_id,knowledge_id,proficiency,updated_at) VALUES(?,?,3,?)',[user.id,knowledgeId,now()]);
+  }
+  await tx.all('UPDATE users SET name=?,bio=? WHERE id=?',[text(b.name,'Nome'),String(b.bio||'').slice(0,1000),user.id]);
+  if(b.password){if(!verify(String(b.current_password||''),user.password_hash))fail('A senha atual não confere.');await tx.all('UPDATE users SET password_hash=? WHERE id=?',[hash(password(b.password)),user.id]);await tx.all('DELETE FROM sessions WHERE user_id=? AND token_hash<>?',[user.id,digest(token)]);}
+  return{ok:true};
+ }
+ if(path==='/api/notifications/read'&&req.method==='POST'){await tx.all('UPDATE notifications SET is_read=1 WHERE user_id=?',[user.id]);return{ok:true};}
+ const notify=async(post,message)=>{if(post.user_id!==user.id)await tx.all('INSERT INTO notifications(id,user_id,post_id,body,created_at) VALUES(?,?,?,?,?)',[id(),post.user_id,post.id,message,now()]);};
+ if(path==='/api/posts'&&req.method==='POST'){
+  const area=b.area_id||null,audience=b.audience_level||null,rank={consultoria:1,gestao:2,lideranca:3};
+  if(audience&&!Object.hasOwn(rank,audience))fail('Público do feed inválido.');
+  if(!user.is_admin&&area&&area!==user.area_id&&user.position_level!=='lideranca')fail('Você só pode publicar na sua área ou no feed geral.',403);
+  if(!user.is_admin&&audience&&(rank[user.position_level]||0)<rank[audience])fail('Seu cargo não pode publicar nesse feed.',403);
+  const knowledgeIds=[...new Set(Array.isArray(b.knowledge_ids)?b.knowledge_ids.map(String):[])];
+  if(!knowledgeIds.length||knowledgeIds.length>8)fail('Escolha de 1 a 8 conhecimentos para classificar a publicação.');
+  const knowledgeRows=await tx.all(`SELECT id,name FROM knowledge_items WHERE id IN (${knowledgeIds.map(()=>'?').join(',')})`,knowledgeIds);
+  if(knowledgeRows.length!==knowledgeIds.length)fail('Um dos conhecimentos escolhidos não existe. Atualize a página e tente novamente.');
+  const title=text(b.title,'Título',160),body=text(b.body,'Texto',10000),category=knowledgeRows[0].name;
+  let postId=b.id;
+  if(b.id){const p=(await tx.all('SELECT * FROM posts WHERE id=?',[b.id]))[0];if(!p||p.user_id!==user.id||!canRead(user,p))fail('Você não pode editar essa publicação.',403);await tx.all('UPDATE posts SET title=?,body=?,category=?,area_id=?,audience_level=?,updated_at=? WHERE id=?',[title,body,category,area,audience,now(),b.id]);}
+  else{postId=id();await tx.all('INSERT INTO posts(id,user_id,area_id,audience_level,title,body,category,created_at) VALUES(?,?,?,?,?,?,?,?)',[postId,user.id,area,audience,title,body,category,now()]);}
+  await tx.all('DELETE FROM post_knowledge WHERE post_id=?',[postId]);
+  for(const knowledgeId of knowledgeIds)await tx.all('INSERT INTO post_knowledge(post_id,knowledge_id) VALUES(?,?)',[postId,knowledgeId]);
+  return{ok:true};
+ }
+ if(path==='/api/post/action'&&req.method==='POST'){
+  const p=(await tx.all('SELECT * FROM posts WHERE id=?',[b.id||'']))[0];if(!p||!canRead(user,p))fail('Publicação indisponível.',404);
+  if(b.action==='delete'){if(!user.is_admin&&p.user_id!==user.id)fail('Sem permissão para excluir.',403);await tx.all('DELETE FROM posts WHERE id=?',[p.id]);}
+  else if(['like','save'].includes(b.action)){
+   const args=[p.id,user.id,b.action],r=await tx.all('SELECT * FROM reactions WHERE post_id=? AND user_id=? AND kind=?',args);
+   if(r.length)await tx.all('DELETE FROM reactions WHERE post_id=? AND user_id=? AND kind=?',args);
+   else{await tx.all('INSERT INTO reactions VALUES(?,?,?)',args);if(b.action==='like')await notify(p,`${user.name} reconheceu “${p.title}”.`);}
+  }else if(b.action==='comment'){await tx.all('INSERT INTO comments VALUES(?,?,?,?,?)',[id(),p.id,user.id,text(b.body,'Comentário',2000),now()]);await notify(p,`${user.name} comentou em “${p.title}”.`);}
+  else if(b.action==='delete-comment'){const c=(await tx.all('SELECT * FROM comments WHERE id=? AND post_id=?',[b.comment_id||'',p.id]))[0];if(!c||(!user.is_admin&&c.user_id!==user.id))fail('Sem permissão.',403);await tx.all('DELETE FROM comments WHERE id=?',[c.id]);}
+  else fail('Ação inválida.');return{ok:true};
+ }
+ fail('Rota não encontrada.',404);
+ });
+}
+const files={'/':'index.html','/admin':'index.html','/app.js':'app.js','/search-utils.mjs':'search-utils.mjs','/knowledge-guides.mjs':'knowledge-guides.mjs','/dashboard-view.mjs':'dashboard-view.mjs','/knowledge-risk-view.mjs':'knowledge-risk-view.mjs','/style.css':'style.css'};
+const server=http.createServer(async(req,res)=>{
+ res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('Content-Security-Policy',"default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+ try{
+  const path=new URL(req.url,'http://localhost').pathname;
+  if(path.startsWith('/api/')){
+   res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json; charset=utf-8');
+   if(!['GET','POST'].includes(req.method))fail('Método não permitido.',405);
+   if(req.method==='POST'&&(req.headers.origin!==origin||!String(req.headers['content-type']).startsWith('application/json')))fail('Origem ou formato da solicitação inválido.',403);
+   let raw='';for await(const chunk of req){raw+=chunk;if(Buffer.byteLength(raw)>64000)fail('Solicitação muito grande.',413);}
+   let b={};try{if(raw)b=JSON.parse(raw);}catch{fail('JSON inválido.');}
+   const result=await api(req,res,path,b);res.end(JSON.stringify(result));
+  }else{
+   if(req.method!=='GET'||!files[path])fail('Página não encontrada.',404);
+   res.setHeader('Content-Type',path.endsWith('.js')||path.endsWith('.mjs')?'text/javascript; charset=utf-8':path.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8');res.end(await readFile(new URL('../public/'+files[path],import.meta.url)));
+  }
+ }catch(e){
+  let message=e.message,status=e.status||500;
+  if(/UNIQUE|unique constraint/i.test(message)){message='Já existe um registro com esse nome ou e-mail.';status=409;}
+  else if(/FOREIGN KEY|foreign key/i.test(message)){message='Esse item está em uso. Remova as ligações, cargos ou vínculos antes de excluí-lo.';status=409;}
+  else if(status===500){console.error(e);message='Não foi possível concluir a operação. Os dados não foram alterados.';}
+  res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify({error:message}));
+ }
+});
+server.listen(port,process.env.HOST||'127.0.0.1',()=>console.log(`Mind disponível em ${origin} | ADMIN: ${origin}/admin`));
+process.on('SIGTERM',()=>server.close(async()=>{await db.close();process.exit(0);}));
